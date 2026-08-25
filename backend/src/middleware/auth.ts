@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { privy } from '../lib/privy.js';
+import { getPrivy } from '../lib/privy.js';
 import { one, query } from '../db/pool.js';
 
 export interface AuthUser {
@@ -35,6 +35,7 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   if (!token) return res.status(401).json({ error: 'Missing bearer token' });
 
   try {
+    const privy = getPrivy();
     const claims = await privy.verifyAuthToken(token);
     const did = claims.userId;
 

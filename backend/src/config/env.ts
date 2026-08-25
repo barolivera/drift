@@ -6,8 +6,9 @@ const schema = z.object({
   PORT: z.coerce.number().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   DATABASE_URL: z.string().url(),
-  PRIVY_APP_ID: z.string().min(1, 'PRIVY_APP_ID is required'),
-  PRIVY_APP_SECRET: z.string().min(1, 'PRIVY_APP_SECRET is required'),
+  // Validated lazily in lib/privy.ts so db scripts don't need them.
+  PRIVY_APP_ID: z.string().optional().default(''),
+  PRIVY_APP_SECRET: z.string().optional().default(''),
   P2PKIT_API_KEY: z.string().optional().default(''),
   P2PKIT_API_URL: z.string().url().default('https://api.p2p.me'),
   P2PKIT_WEBHOOK_SECRET: z.string().optional().default(''),

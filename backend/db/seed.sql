@@ -21,7 +21,7 @@ SELECT
   u.id, s.id,
   'Rosa Winter Swell Week',
   '7 days at Praia do Rosa with coaching, boards and a coworking desk.',
-  DATE '2026-06-15', DATE '2026-06-22', 8, 890.00,
+  CURRENT_DATE + 30, CURRENT_DATE + 37, 8, 890.00,
   ARRAY['board', 'lodging', 'coaching', 'coworking'], 'all', TRUE
 FROM users u, spots s
 WHERE u.privy_did = 'did:privy:seed-host-1' AND s.slug = 'praia-do-rosa'
@@ -32,7 +32,7 @@ SELECT
   u.id, s.id,
   'Itacaré Learn-to-Surf Retreat',
   '5 days in Bahia. Soft-tops, daily lessons, açaí bowls.',
-  DATE '2026-09-02', DATE '2026-09-07', 10, 620.00,
+  CURRENT_DATE + 75, CURRENT_DATE + 80, 10, 620.00,
   ARRAY['board', 'lodging', 'coaching'], 'beginner', TRUE
 FROM users u, spots s
 WHERE u.privy_did = 'did:privy:seed-host-1' AND s.slug = 'itacare'

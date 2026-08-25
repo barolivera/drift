@@ -1,6 +1,12 @@
 import { env } from './config/env.js';
 import { createApp } from './app.js';
 import { pool } from './db/pool.js';
+import { isPrivyConfigured } from './lib/privy.js';
+
+if (!isPrivyConfigured()) {
+  console.error('❌ PRIVY_APP_ID / PRIVY_APP_SECRET missing in backend/.env — get them at https://dashboard.privy.io');
+  process.exit(1);
+}
 
 const app = createApp();
 
