@@ -47,9 +47,14 @@ CREATE TABLE IF NOT EXISTS spots (
   longitude   NUMERIC(9,6),
   best_season TEXT,                     -- free text: 'Apr–Oct'
   level       surf_level NOT NULL DEFAULT 'all',
+  capacity    INTEGER CHECK (capacity > 0),      -- beds at the house
+  daily_rate_usdc NUMERIC(12,2) CHECK (daily_rate_usdc >= 0),
   cover_url   TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE spots ADD COLUMN IF NOT EXISTS capacity INTEGER CHECK (capacity > 0);
+ALTER TABLE spots ADD COLUMN IF NOT EXISTS daily_rate_usdc NUMERIC(12,2) CHECK (daily_rate_usdc >= 0);
 
 -- ---------- trips ----------
 CREATE TABLE IF NOT EXISTS trips (

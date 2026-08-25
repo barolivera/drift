@@ -1,39 +1,31 @@
--- Development seed data for Drift
--- Safe to re-run: uses ON CONFLICT DO NOTHING on natural keys.
+-- Seed data for Drift
+-- Safe to re-run: ON CONFLICT DO NOTHING on natural keys (privy_did, slug, title).
 
-INSERT INTO users (privy_did, email, display_name, is_host, surf_level) VALUES
-  ('did:privy:seed-host-1', 'host@drift.surf', 'Drift Host', TRUE, 'advanced')
+INSERT INTO users (privy_did, email, display_name, wallet_address, is_host, surf_level) VALUES
+  ('did:privy:seed-host-1', 'host@drift.local', 'Drift Host', '0x1234567890123456789012345678901234567890', TRUE, 'advanced')
 ON CONFLICT (privy_did) DO NOTHING;
 
-INSERT INTO spots (slug, name, state, city, description, latitude, longitude, best_season, level) VALUES
-  ('praia-do-rosa', 'Praia do Rosa', 'SC', 'Imbituba',
-   'Consistent beach break with a nomad-friendly village, cafés and coworking.', -28.128, -48.642, 'Apr–Oct', 'all'),
-  ('itacare', 'Itacaré', 'BA', 'Itacaré',
-   'Warm water, jungle beaches and mellow point breaks. Great for learning.', -14.278, -38.996, 'Year-round', 'beginner'),
-  ('florianopolis-joaquina', 'Joaquina', 'SC', 'Florianópolis',
-   'Powerful beach break, home of Brazilian pro surfing. City life close by.', -27.630, -48.448, 'Apr–Sep', 'intermediate'),
-  ('fernando-de-noronha', 'Cacimba do Padre', 'PE', 'Fernando de Noronha',
-   'Crystal-clear tubes on a protected archipelago. Limited daily visitors.', -3.851, -32.442, 'Dec–Mar', 'advanced')
+INSERT INTO spots (slug, name, city, state, description, capacity, daily_rate_usdc, level) VALUES
+  ('itamambuca',    'Itamambuca',    'Itamambuca',    'SP', 'Beachfront house with workspace and community vibes', 12, 150, 'all'),
+  ('praia-do-rosa', 'Praia do Rosa', 'Praia do Rosa', 'SC', 'Luxury eco-house, perfect for builders',             10, 180, 'all')
 ON CONFLICT (slug) DO NOTHING;
 
-INSERT INTO trips (host_id, spot_id, title, description, starts_on, ends_on, capacity, price_usdc, includes, level, is_published)
-SELECT
-  u.id, s.id,
-  'Rosa Winter Swell Week',
-  '7 days at Praia do Rosa with coaching, boards and a coworking desk.',
-  CURRENT_DATE + 30, CURRENT_DATE + 37, 8, 890.00,
-  ARRAY['board', 'lodging', 'coaching', 'coworking'], 'all', TRUE
-FROM users u, spots s
-WHERE u.privy_did = 'did:privy:seed-host-1' AND s.slug = 'praia-do-rosa'
-  AND NOT EXISTS (SELECT 1 FROM trips WHERE title = 'Rosa Winter Swell Week');
+INSERT INTO trips (spot_id, host_id, title, description, starts_on, ends_on, price_usdc, capacity, includes, level, is_published)
+SELECT s.id, u.id,
+       'Itamambuca Jan-Feb',
+       'Summer residency in Itamambuca — surf, build, connect',
+       DATE '2027-01-15', DATE '2027-02-15', 4500, 12,
+       ARRAY['lodging', 'coworking', 'board'], 'all', TRUE
+FROM spots s, users u
+WHERE s.slug = 'itamambuca' AND u.privy_did = 'did:privy:seed-host-1'
+  AND NOT EXISTS (SELECT 1 FROM trips WHERE title = 'Itamambuca Jan-Feb');
 
-INSERT INTO trips (host_id, spot_id, title, description, starts_on, ends_on, capacity, price_usdc, includes, level, is_published)
-SELECT
-  u.id, s.id,
-  'Itacaré Learn-to-Surf Retreat',
-  '5 days in Bahia. Soft-tops, daily lessons, açaí bowls.',
-  CURRENT_DATE + 75, CURRENT_DATE + 80, 10, 620.00,
-  ARRAY['board', 'lodging', 'coaching'], 'beginner', TRUE
-FROM users u, spots s
-WHERE u.privy_did = 'did:privy:seed-host-1' AND s.slug = 'itacare'
-  AND NOT EXISTS (SELECT 1 FROM trips WHERE title = 'Itacaré Learn-to-Surf Retreat');
+INSERT INTO trips (spot_id, host_id, title, description, starts_on, ends_on, price_usdc, capacity, includes, level, is_published)
+SELECT s.id, u.id,
+       'Praia do Rosa Autumn',
+       'Autumn builder retreat in Praia do Rosa — less crowded, perfect for focus',
+       DATE '2027-04-20', DATE '2027-05-20', 5000, 10,
+       ARRAY['lodging', 'coworking', 'board'], 'all', TRUE
+FROM spots s, users u
+WHERE s.slug = 'praia-do-rosa' AND u.privy_did = 'did:privy:seed-host-1'
+  AND NOT EXISTS (SELECT 1 FROM trips WHERE title = 'Praia do Rosa Autumn');
