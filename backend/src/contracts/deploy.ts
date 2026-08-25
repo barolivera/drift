@@ -42,14 +42,14 @@ const NETWORKS = {
   baseSepolia: {
     name: 'Base Sepolia',
     chainId: 84532n,
-    rpc: process.env.BASE_SEPOLIA_RPC ?? 'https://sepolia.base.org',
+    rpc: process.env.BASE_SEPOLIA_RPC || 'https://sepolia.base.org',
     usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // Circle USDC (testnet)
     explorer: 'https://sepolia.basescan.org',
   },
   base: {
     name: 'Base',
     chainId: 8453n,
-    rpc: process.env.BASE_RPC ?? 'https://mainnet.base.org',
+    rpc: process.env.BASE_RPC || 'https://mainnet.base.org',
     usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Circle USDC (native)
     explorer: 'https://basescan.org',
   },
@@ -122,10 +122,10 @@ function compile() {
 
 // ─── Deploy ───────────────────────────────────────────────────────────
 async function deploy(artifact: ReturnType<typeof compile>) {
-  const pk = process.env.PRIVATE_KEY ?? process.env.DEPLOYER_PRIVATE_KEY;
+  const pk = process.env.PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY;
   const diamond = process.env.P2P_DIAMOND_ADDRESS;
   const treasury = process.env.DRIFT_TREASURY_ADDRESS;
-  const usdc = process.env.USDC_ADDRESS ?? net.usdc;
+  const usdc = process.env.USDC_ADDRESS || net.usdc;
 
   const missing = [
     !pk && 'PRIVATE_KEY',
