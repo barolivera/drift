@@ -17,3 +17,5 @@ npm-debug.log*
 *.swp
 # db
 pgdata/
+# solc output
+backend/src/contracts/artifacts/

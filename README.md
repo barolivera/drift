@@ -10,7 +10,7 @@ Surf trips in Brazil for crypto nomads. Book a trip, pay in USDC (or PIX via p2p
 | Auth     | [Privy](https://privy.io) (email / wallet / social)|
 | Backend  | Node 20 + Express + TypeScript                    |
 | Database | PostgreSQL 16 (`pg`)                              |
-| Payments | p2pkit adapter (`backend/src/lib/p2pkit.ts`)      |
+| Payments | p2pkit adapter (`backend/src/lib/p2pkit.ts`) + on-chain integrator `backend/src/contracts/DriftIntegrator.sol` (see `backend/DEPLOY.md`) |
 
 ## Quick start
 
@@ -39,12 +39,14 @@ drift/
 │       └── lib/       api client
 ├── backend/           Express API
 │   ├── db/            schema.sql, seed.sql
+│   ├── DEPLOY.md      how to deploy the p2pkit integrator contract
 │   └── src/
 │       ├── config/    env validation
 │       ├── db/        pg pool + migrate/seed scripts
 │       ├── middleware/ Privy token verification
 │       ├── routes/    /auth, /trips, /bookings, /payments
-│       └── lib/       p2pkit adapter
+│       ├── lib/       p2pkit adapter
+│       └── contracts/ DriftIntegrator.sol + deploy.ts (Base)
 └── docker-compose.yml postgres
 ```
 
