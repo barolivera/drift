@@ -1,0 +1,19 @@
+# deps
+node_modules/
+# env
+.env
+.env.*
+!.env.example
+# builds
+dist/
+build/
+# logs
+*.log
+npm-debug.log*
+# os / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+# db
+pgdata/
