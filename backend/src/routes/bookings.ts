@@ -19,6 +19,22 @@ bookingsRouter.get('/', requireAuth, async (req, res) => {
   res.json(rows);
 });
 
+/** One booking of the caller, with trip summary — used by the standalone booking page. */
+bookingsRouter.get('/:id', requireAuth, async (req, res) => {
+  if (!/^[0-9a-f-]{36}$/i.test(req.params.id)) return res.status(400).json({ error: 'Invalid booking id' });
+  const booking = await one(
+    `SELECT b.*, t.title, t.starts_on, t.ends_on, t.price_usdc, t.price_full_usdc, t.founding_seats,
+            json_build_object('name', s.name, 'city', s.city, 'state', s.state) AS spot
+     FROM bookings b
+     JOIN trips t ON t.id = b.trip_id
+     JOIN spots s ON s.id = t.spot_id
+     WHERE b.id = $1 AND b.user_id = $2`,
+    [req.params.id, req.user!.id],
+  );
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  res.json(booking);
+});
+
 const trimmed = (max: number) => z.string().trim().min(1, 'Required').max(max);
 
 /**

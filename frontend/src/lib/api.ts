@@ -139,6 +139,8 @@ export interface Booking {
   starts_on: string;
   ends_on: string;
   price_usdc: string;
+  price_full_usdc?: string | null;
+  founding_seats?: number | null;
   spot: { name: string; city: string; state: string };
 }
 

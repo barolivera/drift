@@ -9,6 +9,8 @@ export interface BookingFormProps {
   /** Called with the pending booking once it is saved — hand it to <PaymentCheckout>. */
   onSaved: (booking: Booking) => void;
   onCancel?: () => void;
+  /** Hide the trip summary when the host page already shows one. */
+  showSummary?: boolean;
 }
 
 const SURF_LEVELS: { value: BookingInput['surf_level']; label: string }[] = [
@@ -34,7 +36,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * details on the pending booking (POST /api/bookings) and moves straight on
  * to payment — it is not an application filter.
  */
-export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
+export function BookingForm({ trip, onSaved, onCancel, showSummary = true }: BookingFormProps) {
   const { user } = usePrivy();
   const call = useApi();
   const privyEmail = user?.email?.address ?? user?.google?.email ?? '';
@@ -108,11 +110,13 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
       {/* summary */}
-      <div className="rounded-xl bg-sand-100 px-4 py-3 text-sm">
-        <p className="font-semibold text-ocean-900">{trip.title}</p>
-        <p className="text-ocean-700">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
-        <PriceTag trip={trip} size="sm" className="mt-1" />
+      {showSummary && (
+      <div className="rounded-2xl bg-surface px-4 py-3 text-sm">
+        <p className="font-semibold text-ink">{trip.title}</p>
+        <span className="chip chip-lilac mt-1.5">{formatDateRange(trip.starts_on, trip.ends_on)}</span>
+        <PriceTag trip={trip} size="sm" className="mt-2" />
       </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="First name" error={fieldErrors.full_name}>
@@ -128,10 +132,10 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
       </Field>
 
       <Field label="Telegram" helper="Trip comms happen on Telegram — this is how we reach you" error={fieldErrors.telegram}>
-        <div className="flex items-center rounded-lg border border-sand-300 bg-white focus-within:border-ocean-500">
-          <span className="pl-3 text-ocean-500">@</span>
+        <div className="flex items-center rounded-xl border border-line bg-paper transition-colors focus-within:border-ink">
+          <span className="pixel pl-3.5 text-mute">@</span>
           <input
-            className="w-full rounded-lg bg-transparent px-2 py-2 text-sm outline-none"
+            className="w-full rounded-xl bg-transparent px-2 py-2.5 text-sm outline-none"
             value={telegram}
             onChange={(e) => setTelegram(e.target.value.replace(/^@+/, ''))}
             placeholder="yourhandle"
@@ -155,25 +159,28 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
       </Field>
 
       <Field label="Surf level" helper="All levels welcome — this is just so we can split the sessions" error={fieldErrors.surf_level}>
-        <div className="grid grid-cols-2 gap-2">
-          {SURF_LEVELS.map((lvl) => (
-            <label
-              key={lvl.value}
-              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-                surfLevel === lvl.value ? 'border-ocean-500 bg-ocean-50 text-ocean-900' : 'border-sand-300 bg-white text-ocean-700'
-              }`}
-            >
-              <input
-                type="radio"
-                name="surf_level"
-                value={lvl.value}
-                checked={surfLevel === lvl.value}
-                onChange={() => setSurfLevel(lvl.value)}
-                className="accent-ocean-500"
-              />
-              {lvl.label}
-            </label>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          {SURF_LEVELS.map((lvl) => {
+            const on = surfLevel === lvl.value;
+            return (
+              <label
+                key={lvl.value}
+                className={`pixel cursor-pointer rounded-full px-3.5 py-2 transition-colors ${
+                  on ? 'bg-mustard text-ink' : 'border border-line bg-paper text-mute hover:border-ink hover:text-ink'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="surf_level"
+                  value={lvl.value}
+                  checked={on}
+                  onChange={() => setSurfLevel(lvl.value)}
+                  className="sr-only"
+                />
+                {lvl.label}
+              </label>
+            );
+          })}
         </div>
       </Field>
 
@@ -185,15 +192,15 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
         <input className={inputCls} value={dietary} onChange={(e) => setDietary(e.target.value)} />
       </Field>
 
-      <label className="flex items-start gap-2 text-sm text-ocean-800">
-        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 accent-ocean-500" required />
+      <label className="flex items-start gap-2 text-sm text-ink/80">
+        <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 h-4 w-4 accent-coral" required />
         <span>
           I've read and agree to the{' '}
-          <a href="/code-of-conduct" className="text-ocean-500 underline" target="_blank" rel="noreferrer">
+          <a href="/code-of-conduct" className="underline underline-offset-2" target="_blank" rel="noreferrer">
             Code of Conduct
           </a>{' '}
           and{' '}
-          <a href="/terms" className="text-ocean-500 underline" target="_blank" rel="noreferrer">
+          <a href="/terms" className="underline underline-offset-2" target="_blank" rel="noreferrer">
             Terms
           </a>
         </span>
@@ -202,15 +209,11 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={!complete || submitting}
-        className="w-full rounded-full bg-ocean-500 py-2.5 font-medium text-white hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-ocean-500"
-      >
+      <button type="submit" disabled={!complete || submitting} className="btn-primary btn-lg w-full">
         {submitting ? 'Saving…' : 'Continue to payment'}
       </button>
       {onCancel && (
-        <button type="button" onClick={onCancel} className="w-full text-sm text-ocean-500 hover:underline">
+        <button type="button" onClick={onCancel} className="btn-secondary w-full">
           Cancel
         </button>
       )}
@@ -218,18 +221,17 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
   );
 }
 
-const inputCls =
-  'w-full rounded-lg border border-sand-300 bg-white px-3 py-2 text-sm text-ocean-900 outline-none focus:border-ocean-500';
+const inputCls = 'field';
 
 function Field({ label, helper, error, children }: { label: string; helper?: string; error?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-ocean-900">{label}</span>
+      <span className="mb-1.5 block text-sm font-semibold text-ink">{label}</span>
       {children}
       {error ? (
         <span className="mt-1 block text-xs text-red-700">{error}</span>
       ) : helper ? (
-        <span className="mt-1 block text-xs text-ocean-700">{helper}</span>
+        <span className="mt-1.5 block text-xs text-mute">{helper}</span>
       ) : null}
     </label>
   );
