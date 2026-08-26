@@ -105,13 +105,19 @@ It also saves `src/contracts/deployments/baseSepolia.json` (commit this).
 DRIFT_INTEGRATOR_ADDRESS=0x…
 ```
 
-**5. Verify on Basescan** so P2P reviewers can diff the source. Easiest path is Basescan's
-"Verify & Publish" UI with *Solidity (Standard-Json-Input)*: compiler `v0.8.28`, EVM `cancun`,
-optimizer on / 200 runs, viaIR **enabled**. Constructor args ABI-encoded:
+**5. Verify on Basescan.** Put an Etherscan API v2 key (covers Basescan / Base Sepolia) in
+`backend/.env` as `ETHERSCAN_API_KEY`, then:
 
 ```bash
-node -e "const {AbiCoder}=require('ethers');console.log(AbiCoder.defaultAbiCoder().encode(['address','address','address'],[process.env.USDC,process.env.DIAMOND,process.env.TREASURY]))"
+npm run verify:contract                    # Base Sepolia, address from deployments/baseSepolia.json
+npm run verify:contract -- --network base  # mainnet
 ```
+
+The script rebuilds the standard-JSON with every source unit (contract, `p2p/`, OpenZeppelin)
+and the deploy settings, **compares the runtime bytecode with the on-chain code first** (immutable
+slots masked; on any other difference it prints the settings/metadata diff and does not submit),
+then submits with the ABI-encoded constructor args and polls until `Pass - Verified`.
+Sepolia integrator: <https://sepolia.basescan.org/address/0x7e1b37c447284257B30f82bc6668B7a4a0F5bb3F#code> — verified.
 
 **6. Request whitelisting.** Nothing works until P2P calls `registerIntegrator` on the Diamond.
 Open a "Whitelist request" issue on <https://github.com/p2pdotme/payment-integrators> with:

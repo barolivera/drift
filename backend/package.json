@@ -13,7 +13,8 @@
     "db:seed": "tsx src/db/seed.ts",
     "contract:compile": "tsx src/contracts/deploy.ts --compile-only",
     "deploy:contract": "tsx src/contracts/deploy.ts",
-    "deploy:contract:mainnet": "tsx src/contracts/deploy.ts --network base"
+    "deploy:contract:mainnet": "tsx src/contracts/deploy.ts --network base",
+    "verify:contract": "tsx src/contracts/verify.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1",
