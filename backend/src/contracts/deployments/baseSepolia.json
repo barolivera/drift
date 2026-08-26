@@ -1,13 +1,13 @@
 {
   "network": "baseSepolia",
   "chainId": 84532,
-  "address": "0x0558785E9AD09Ba62D98d3d139A53Cce88B5552C",
-  "proxyImpl": "0xE435d1Cb972e62a815acEaA2315C8393E8965Aea",
+  "address": "0x7e1b37c447284257B30f82bc6668B7a4a0F5bb3F",
+  "proxyImpl": "0x89d595f7b2afdEce175Fe372C3EF1FeA813CDBBb",
   "owner": "0x0aA91DE214B8b1cb36CB0AcB8aFdf40561F5Af32",
-  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "usdc": "0x4095fE4f1E636f11A95820BA2bB87F335Bd1040d",
   "diamond": "0xeb0BB8E3c014D915D9B2df03aBB130a1Fb44beb9",
   "treasury": "0x0aA91DE214B8b1cb36CB0AcB8aFdf40561F5Af32",
-  "txHash": "0xf75dfa0e0201a6945ac486f4afae2b1fc5c9135fadddb52abc258e342be10ada",
-  "bytecodeHash": "0x5129391da3982962fecd8483502e1d630da3179eb61c67458579a4aa7d503afc",
-  "deployedAt": "2026-08-25T23:27:04.767Z"
+  "txHash": "0xbeab7fc447e4e80c7686d9ac7bf03b83afa3ae1a8d5686511cef17b785e1a005",
+  "bytecodeHash": "0xcdc206979da4dccb5efd62f493a88bb7e9ca24ad94f26a4cc6adfb7bd12234df",
+  "deployedAt": "2026-08-25T23:45:33.970Z"
 }

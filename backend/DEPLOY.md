@@ -42,9 +42,15 @@ You do **not** need USDC to deploy, and the buyer never sends USDC — in the p2
 merchant supplies it. You only need testnet USDC to simulate a merchant or to test
 `recoverStranded`. Sources:
 
-- **Circle faucet** (official, 10 USDC/hour): <https://faucet.circle.com> → network *Base Sepolia*.
-  Token address: `0x036CbD53842c5426634e7929541eC2318f3dCF7e`.
-- Add it to MetaMask with that address, symbol `USDC`, 6 decimals.
+> ⚠️ The P2P **Sepolia Diamond settles in its own test USDC**:
+> `0x4095fE4f1E636f11A95820BA2bB87F335Bd1040d` — *not* Circle's testnet USDC
+> (`0x036CbD53842c5426634e7929541eC2318f3dCF7e`). `deploy.ts` defaults to the P2P one.
+> Deploying with Circle's address makes `onOrderComplete` revert on every order.
+
+- **P2P test USDC** (`0x4095…040d`): ask the P2P team for a mint, or use their gas/token faucet
+  (`services/gas-faucet` in the integrators repo). Merchants in the test circles hold it.
+- **Circle faucet** (only useful for non-P2P testing): <https://faucet.circle.com> → *Base Sepolia*.
+- Add either token to MetaMask with its address, symbol `USDC`, 6 decimals.
 
 ## Deploy — step by step
 
@@ -57,7 +63,7 @@ PRIVATE_KEY=0x…                       # deployer, becomes owner
 P2P_DIAMOND_ADDRESS=0x…               # Base Sepolia Diamond from P2P
 DRIFT_TREASURY_ADDRESS=0x…            # where USDC lands
 # optional:
-# USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+# USDC_ADDRESS=0x4095fE4f1E636f11A95820BA2bB87F335Bd1040d   # P2P test USDC (default)
 # BASE_SEPOLIA_RPC=https://sepolia.base.org
 ```
 

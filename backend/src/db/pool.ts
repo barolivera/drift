@@ -1,6 +1,9 @@
 import pg from 'pg';
 import { env, isProd } from '../config/env.js';
 
+// DATE (OID 1082) → keep as 'YYYY-MM-DD'; pg's default turns it into a local-time Date.
+pg.types.setTypeParser(1082, (v) => v);
+
 export const pool = new pg.Pool({
   connectionString: env.DATABASE_URL,
   ssl: isProd ? { rejectUnauthorized: false } : undefined,

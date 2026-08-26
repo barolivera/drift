@@ -66,6 +66,17 @@ export interface Booking {
   spot: { name: string; city: string; state: string };
 }
 
+export interface PaymentStatus {
+  payment_id: string;
+  order_id: string;
+  status: 'pending' | 'processing' | 'settled' | 'failed' | 'refunded';
+  amount_usdc: string;
+  tx_hash: string | null;
+  updated_at: string;
+  booking_id: string;
+  booking_status: Booking['status'];
+}
+
 export interface Me {
   id: string;
   privy_did: string;

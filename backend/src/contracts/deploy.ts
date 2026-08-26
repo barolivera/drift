@@ -43,7 +43,9 @@ const NETWORKS = {
     name: 'Base Sepolia',
     chainId: 84532n,
     rpc: process.env.BASE_SEPOLIA_RPC || 'https://sepolia.base.org',
-    usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', // Circle USDC (testnet)
+    // NOT Circle's testnet USDC (0x036C…): the P2P Sepolia Diamond settles in its
+    // own test USDC. Verified via `usdc()` on P2P's reference integrator.
+    usdc: '0x4095fE4f1E636f11A95820BA2bB87F335Bd1040d', // P2P test USDC (Base Sepolia)
     explorer: 'https://sepolia.basescan.org',
   },
   base: {

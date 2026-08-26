@@ -4,6 +4,7 @@ import { env } from '../config/env.js';
 import { query, one } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { p2pkit, P2PKitError, isP2PKitConfigured } from '../lib/p2pkit.js';
+import { readOrderSession, isIntegratorConfigured } from '../lib/integrator.js';
 
 export const paymentsRouter = Router();
 
@@ -89,6 +90,102 @@ paymentsRouter.post('/', requireAuth, async (req, res) => {
     await query(`UPDATE payments SET status = 'failed' WHERE id = $1`, [payment!.id]);
     handleP2PError(err, res);
   }
+});
+
+// ─── p2pkit widget flow (DriftIntegrator on Base) ────────────────────
+
+const registerP2pOrder = z.object({
+  booking_id: z.string().uuid(),
+  order_id: z.string().min(1),
+  tx_hash: z.string().regex(/^0x[a-fA-F0-9]{64}$/).nullable().optional(),
+  amount_usdc: z.number().positive().optional(),
+});
+
+/**
+ * Frontend placed a Diamond order via DriftIntegrator.bookTrip. Record it so
+ * the booking can be reconciled with the on-chain lifecycle.
+ */
+paymentsRouter.post('/p2pkit', requireAuth, async (req, res) => {
+  const body = registerP2pOrder.safeParse(req.body);
+  if (!body.success) return res.status(400).json({ error: body.error.flatten() });
+  const { booking_id, order_id, tx_hash, amount_usdc } = body.data;
+
+  const booking = await one<{ id: string; seats: number; price_usdc: string; status: string }>(
+    `SELECT b.id, b.seats, b.status, t.price_usdc
+     FROM bookings b JOIN trips t ON t.id = b.trip_id
+     WHERE b.id = $1 AND b.user_id = $2`,
+    [booking_id, req.user!.id],
+  );
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (booking.status !== 'pending') return res.status(409).json({ error: `Booking is ${booking.status}` });
+
+  const amount = amount_usdc ?? Number(booking.price_usdc) * booking.seats;
+  const payment = await one(
+    `INSERT INTO payments (booking_id, method, status, amount_usdc, chain, tx_hash, p2pkit_order_id)
+     VALUES ($1, 'pix_p2pkit', 'processing', $2, 'base-sepolia', $3, $4)
+     ON CONFLICT (p2pkit_order_id) DO UPDATE SET updated_at = now()
+     RETURNING id, booking_id, status, p2pkit_order_id, tx_hash`,
+    [booking.id, amount, tx_hash ?? null, order_id],
+  );
+  res.status(201).json(payment);
+});
+
+/**
+ * Widget reported COMPLETED. Verify against the integrator contract when
+ * configured (session.status must be Paid), then settle + confirm the booking.
+ */
+paymentsRouter.post('/p2pkit/:orderId/complete', requireAuth, async (req, res) => {
+  const orderId = req.params.orderId;
+  const payment = await one<{ id: string; booking_id: string; status: string }>(
+    `SELECT p.id, p.booking_id, p.status
+     FROM payments p JOIN bookings b ON b.id = p.booking_id
+     WHERE p.p2pkit_order_id = $1 AND b.user_id = $2`,
+    [orderId, req.user!.id],
+  );
+  if (!payment) return res.status(404).json({ error: 'Order not found' });
+
+  const isDemo = orderId.startsWith('demo'); // widget demo mode: `demo<timestamp>`
+  if (!isDemo && isIntegratorConfigured()) {
+    try {
+      const session = await readOrderSession(orderId);
+      if (session.status !== 'Paid') {
+        return res.status(409).json({ error: `On-chain order is ${session.status}, not Paid` });
+      }
+    } catch (err) {
+      console.error('integrator read failed', err);
+      return res.status(502).json({ error: 'Could not verify order on-chain' });
+    }
+  } else if (!isDemo) {
+    console.warn(`p2pkit order ${orderId} confirmed WITHOUT on-chain verification (DRIFT_INTEGRATOR_ADDRESS unset)`);
+  }
+
+  if (payment.status !== 'settled') {
+    await query(`UPDATE payments SET status = 'settled' WHERE id = $1`, [payment.id]);
+  }
+  const booking = await one(
+    `UPDATE bookings b SET status = 'confirmed'
+     FROM trips t
+     WHERE b.id = $1 AND t.id = b.trip_id AND b.status IN ('pending', 'confirmed')
+     RETURNING b.*, t.title, t.starts_on, t.ends_on, t.price_usdc`,
+    [payment.booking_id],
+  );
+  res.json(booking);
+});
+
+/**
+ * Poll endpoint for the frontend: status of a p2pkit order (by Diamond orderId)
+ * plus the booking it pays for. Scoped to the caller's own bookings.
+ */
+paymentsRouter.get('/:orderId', requireAuth, async (req, res) => {
+  const row = await one(
+    `SELECT p.id AS payment_id, p.status, p.amount_usdc, p.tx_hash, p.p2pkit_order_id AS order_id,
+            p.updated_at, b.id AS booking_id, b.status AS booking_status
+     FROM payments p JOIN bookings b ON b.id = p.booking_id
+     WHERE p.p2pkit_order_id = $1 AND b.user_id = $2`,
+    [req.params.orderId, req.user!.id],
+  );
+  if (!row) return res.status(404).json({ error: 'Order not found' });
+  res.json(row);
 });
 
 /** Client-side USDC transfer confirmation. TODO: verify tx on-chain before settling. */

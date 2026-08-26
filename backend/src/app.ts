@@ -8,6 +8,7 @@ import { tripsRouter } from './routes/trips.js';
 import { bookingsRouter } from './routes/bookings.js';
 import { paymentsRouter } from './routes/payments.js';
 import { spotsRouter } from './routes/spots.js';
+import { webhooksRouter } from './routes/webhooks.js';
 
 export function createApp() {
   const app = express();
@@ -27,6 +28,13 @@ export function createApp() {
   app.use('/api/trips', tripsRouter);
   app.use('/api/bookings', bookingsRouter);
   app.use('/api/payments', paymentsRouter);
+
+  // Inbound webhooks (P2P.me order lifecycle). No user auth — guarded by a
+  // shared secret inside the router. Every hit is logged with its body.
+  app.use('/webhooks', (req, _res, next) => {
+    console.log(`[webhook] ${req.method} ${req.originalUrl} from ${req.ip}`);
+    next();
+  }, webhooksRouter);
 
   app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 

@@ -15,6 +15,9 @@ const schema = z.object({
   P2PKIT_CHAIN: z.string().default('base'),
   P2PKIT_ASSET: z.string().default('USDC'),
   DRIFT_TREASURY_ADDRESS: z.string().optional().default(''),
+  // On-chain integrator (backend/src/contracts). Used to verify p2pkit orders.
+  DRIFT_INTEGRATOR_ADDRESS: z.string().optional().default(''),
+  BASE_SEPOLIA_RPC: z.string().optional().default('https://sepolia.base.org'),
 });
 
 const parsed = schema.safeParse(process.env);
