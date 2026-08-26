@@ -1,200 +1,222 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
-import { api, formatDateRange, nights, hasFoundingPrice, type Trip, type Booking } from '@/lib/api';
+import { api, formatDateRange, nights, hasFoundingPrice, type Trip } from '@/lib/api';
 import { PriceTag } from '@/components/PriceTag';
-import { PaymentCheckout } from '@/components/PaymentCheckout';
-import { BookingForm } from '@/components/BookingForm';
+import { Inclusions } from '@/components/Inclusions';
+import { Faq } from '@/components/Faq';
+import { inclusionsFrom } from '@/lib/inclusions';
+import { photos, src, srcSet, type Photo } from '@/lib/photos';
 
-type Stage = 'idle' | 'form' | 'checkout' | 'paid';
+const container = 'mx-auto w-full max-w-6xl px-5 sm:px-8';
+const eyebrow = 'pixel text-mute';
+const h2 = 'text-section font-extrabold tracking-tight text-ink';
 
+/* Per-spot copy that isn't in the DB yet: the place photo and how to get there. */
+const SPOT: Record<string, { hero: Photo; house: Photo; airport: string; transfer: string }> = {
+  itamambuca: {
+    hero: photos.itamambuca,
+    house: photos.remoteWorkers,
+    airport: 'Fly into São Paulo (GRU).',
+    transfer: 'We pick you up at the airport on arrival day — about four hours to the house along the coast — and take you back on departure day.',
+  },
+  'praia-do-rosa': {
+    hero: photos.praiaDoRosa,
+    house: photos.builders,
+    airport: 'Fly into Florianópolis (FLN).',
+    transfer: 'We pick you up at the airport on arrival day — about ninety minutes south to the bay — and take you back on departure day.',
+  },
+};
+
+/**
+ * Edition page. Order: hero → the place → what's included → logistics →
+ * book → FAQ. No day-by-day schedule anywhere.
+ */
 export function TripDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { ready, authenticated, login } = usePrivy();
   const [trip, setTrip] = useState<Trip | null>(null);
-  const [stage, setStage] = useState<Stage>('idle');
-  const [booking, setBooking] = useState<Booking | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) api<Trip>(`/api/trips/${id}`).then(setTrip).catch((e) => setError(e.message));
   }, [id]);
 
-  if (error && !trip) return <p className="text-red-700">{error}</p>;
-  if (!trip) return <p className="text-ocean-700">Loading…</p>;
+  if (error && !trip) return <p className={`${container} py-10 text-red-700`}>{error}</p>;
+  if (!trip) return <p className={`${container} py-10 text-mute`}>Loading…</p>;
 
   const soldOut = trip.seats_left <= 0;
-  const paragraphs = (trip.description_long ?? trip.description ?? '').split(/\n\s*\n/).filter(Boolean);
+  const spot = SPOT[trip.spot.slug] ?? { hero: photos.hero, house: photos.remoteWorkers, airport: '', transfer: '' };
+  const [place, edition] = trip.title.split(' — ');
+  const paragraphs = (trip.description_long ?? '').split(/\n\s*\n/).filter(Boolean);
+  const inclusions = inclusionsFrom(trip.included);
 
   function bookNow() {
     if (!authenticated) return login();
-    setStage('form');
+    navigate(`/trips/${trip!.id}/book`);
   }
 
+  const bookButton = (
+    <button onClick={bookNow} disabled={!ready || soldOut} className="btn-primary btn-lg">
+      {!ready ? 'Loading…' : soldOut ? 'Sold out' : authenticated ? 'Book Now' : 'Log in to book'}
+    </button>
+  );
+
   return (
-    <article className="grid gap-8 md:grid-cols-[2fr_1fr]">
-      {/* ── main column ─────────────────────────────────────────── */}
-      <div className="space-y-10">
-        <header>
-          <div className="mb-6 aspect-[16/9] rounded-2xl bg-gradient-to-br from-ocean-300 to-ocean-700" />
-          <p className="text-xs uppercase tracking-wide text-ocean-500">
-            {trip.location ?? `${trip.spot.name} · ${trip.spot.city}, ${trip.spot.state}`}
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold">{trip.title}</h1>
-          <p className="mt-1 text-sm text-ocean-700">
-            {formatDateRange(trip.starts_on, trip.ends_on)} · {nights(trip.starts_on, trip.ends_on)} nights ·{' '}
-            {trip.capacity} seats
-          </p>
-          <div className="mt-5 space-y-4 text-ocean-800">
-            {paragraphs.map((para, i) => (
-              <p key={i} className={i === 0 ? 'text-lg leading-relaxed' : 'leading-relaxed'}>
-                {para}
-              </p>
-            ))}
+    <article className="bg-paper text-ink">
+      {/* a. HERO — full-width photo, title, short description */}
+      <section className="relative isolate">
+        <div className="relative h-[60svh] min-h-[380px] w-full overflow-hidden">
+          <img
+            src={src(spot.hero, 1800)}
+            srcSet={srcSet(spot.hero)}
+            sizes="100vw"
+            alt={spot.hero.alt}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+          <Credit photo={spot.hero} className="absolute bottom-3 right-4 text-paper/70" />
+        </div>
+        <div className={`${container} -mt-24 relative pb-4`}>
+          <div className="card-paper max-w-3xl p-6 sm:p-10">
+            <div className="flex flex-wrap gap-2">
+              <span className="chip chip-lilac">{formatDateRange(trip.starts_on, trip.ends_on)}</span>
+              <span className="chip chip-ghost">{trip.location ?? `${trip.spot.name}, ${trip.spot.state}`}</span>
+              {hasFoundingPrice(trip) && <span className="chip chip-coral">Founding cohort · {trip.founding_seats} seats</span>}
+            </div>
+            <h1 className="mt-5 text-display-xl font-extrabold">{place}</h1>
+            {edition && <p className="mt-1 text-xl font-bold text-mute">{edition}</p>}
+            {trip.description && <p className="mt-5 max-w-prose text-lede text-ink/80">{trip.description}</p>}
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              {bookButton}
+              <a href="#logistics" className="btn-secondary btn-lg">
+                Dates & logistics
+              </a>
+            </div>
           </div>
-        </header>
+        </div>
+      </section>
 
-        {(trip.included.length > 0 || trip.not_included.length > 0) && (
-          <section className="grid gap-6 sm:grid-cols-2">
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ocean-500">What's included</h2>
-              <ul className="space-y-2">
-                {trip.included.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm text-ocean-800">
-                    <span aria-hidden className="mt-0.5 text-ocean-500">✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ocean-500">Not included</h2>
-              <ul className="space-y-2">
-                {trip.not_included.map((item) => (
-                  <li key={item} className="flex gap-2 text-sm text-ocean-700">
-                    <span aria-hidden className="mt-0.5 text-sand-500">–</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
-
-        {trip.daily_schedule.length > 0 && (
-          <section>
-            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ocean-500">A day at the house</h2>
-            <p className="mb-5 text-sm text-ocean-700">Same rhythm every day. The deep-work block is the one rule.</p>
-            <ol className="relative border-l border-sand-300 pl-6">
-              {trip.daily_schedule.map((slot) => (
-                <li key={slot.time} className="relative pb-6 last:pb-0">
-                  <span
-                    aria-hidden
-                    className={`absolute -left-[31px] top-1.5 h-2.5 w-2.5 rounded-full ring-4 ring-sand-50 ${
-                      slot.highlight ? 'bg-ocean-500' : 'bg-sand-300'
-                    }`}
-                  />
-                  <div className={slot.highlight ? '-ml-3 rounded-xl border border-ocean-300 bg-ocean-50 px-4 py-3' : ''}>
-                    <div className="flex items-baseline gap-3">
-                      <span className="w-12 shrink-0 font-mono text-xs text-ocean-500">{slot.time}</span>
-                      <span className={`font-semibold ${slot.highlight ? 'text-ocean-900' : 'text-ocean-800'}`}>
-                        {slot.title}
-                      </span>
-                      {slot.highlight && (
-                        <span className="rounded-full bg-ocean-500 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-white">
-                          The one rule
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-0.5 pl-[3.75rem] text-sm text-ocean-700">{slot.detail}</p>
-                  </div>
-                </li>
+      {/* b. THE PLACE — description + photo */}
+      <section className={`${container} py-20 md:py-28`}>
+        <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
+          <div>
+            <p className={eyebrow}>The place</p>
+            <h2 className={`${h2} mt-3`}>The house at {trip.spot.name}</h2>
+            <div className="mt-6 space-y-4 text-ink/80">
+              {paragraphs.map((para, i) => (
+                <p key={i} className={i === 0 ? 'text-lede' : 'leading-relaxed'}>
+                  {para}
+                </p>
               ))}
-            </ol>
-          </section>
-        )}
-
-        {trip.who_its_for && (
-          <section className="rounded-2xl bg-sand-100 p-6">
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ocean-500">Who it's for</h2>
-            <p className="leading-relaxed text-ocean-800">{trip.who_its_for}</p>
-          </section>
-        )}
-      </div>
-
-      {/* ── booking card ────────────────────────────────────────── */}
-      <aside
-        className={`h-fit rounded-2xl border border-sand-300/60 bg-white p-6 ${
-          stage === 'idle' || stage === 'paid' ? 'md:sticky md:top-6' : ''
-        }`}
-      >
-        <PriceTag trip={trip} size="md" />
-        {hasFoundingPrice(trip) && (
-          <p className="mt-2 text-xs text-ocean-700">
-            Launch price for the first {trip.founding_seats} residents of this edition. Regular price after that.
-          </p>
-        )}
-        <p className="mt-2 text-sm text-ocean-700">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
-        <p className={`mt-1 text-sm ${soldOut ? 'text-red-700' : 'text-ocean-700'}`}>
-          {soldOut ? 'Sold out' : `${trip.seats_left} of ${trip.capacity} seats left`}
-        </p>
-
-        {stage === 'idle' && (
-          <button
-            onClick={bookNow}
-            disabled={!ready || soldOut}
-            className="mt-4 w-full rounded-full bg-ocean-500 py-2.5 font-medium text-white hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-ocean-500"
-          >
-            {!ready ? 'Loading…' : soldOut ? 'Sold out' : authenticated ? 'Book Now' : 'Log in to book'}
-          </button>
-        )}
-
-        {stage === 'form' && (
-          <div className="mt-4">
-            <BookingForm
-              trip={trip}
-              onSaved={(b) => {
-                setBooking(b);
-                setStage('checkout');
-              }}
-              onCancel={() => setStage('idle')}
+              {trip.who_its_for && (
+                <p className="rounded-2xl bg-surface p-5 text-sm leading-relaxed text-ink/80">
+                  <span className="pixel mb-2 block text-mute">Who this edition is for</span>
+                  {trip.who_its_for}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="card relative p-2">
+            <img
+              src={src(spot.house, 1000)}
+              srcSet={srcSet(spot.house, [480, 1000, 1400])}
+              sizes="(min-width: 768px) 45vw, 100vw"
+              alt={spot.house.alt}
+              loading="lazy"
+              className="aspect-[4/5] w-full rounded-2xl object-cover md:aspect-[4/4.6]"
             />
+            <Credit photo={spot.house} className="absolute bottom-4 right-5 text-paper/70" />
           </div>
-        )}
+        </div>
+      </section>
 
-        {stage === 'checkout' && booking && (
-          <div className="mt-4">
-            <p className="mb-3 text-sm text-ocean-700">Pay with PIX — settled in USDC on Base.</p>
-            <PaymentCheckout
-              tripId={trip.id}
-              price={trip.price_usdc}
-              productName={trip.title}
-              booking={booking}
-              onSuccess={(b) => {
-                setBooking(b);
-                setStage('paid');
-              }}
-              onCancel={() => setStage('idle')}
-            />
-            <button onClick={() => setStage('idle')} className="mt-3 w-full text-sm text-ocean-500 hover:underline">
-              Cancel
-            </button>
+      {/* c. INCLUSIONS — same grid as the Home */}
+      <section className={`${container} pb-20 md:pb-28`}>
+        <div className="card p-6 sm:p-10 md:p-14">
+          <div className="grid gap-10 md:grid-cols-[1fr_2fr] md:gap-16">
+            <div>
+              <p className={eyebrow}>Included</p>
+              <h2 className={`${h2} mt-3`}>What two weeks include</h2>
+              {trip.not_included.length > 0 && (
+                <p className="mt-5 text-sm text-mute">
+                  <span className="pixel mb-1.5 block">Not included</span>
+                  {trip.not_included.join(' · ')}
+                </p>
+              )}
+            </div>
+            <Inclusions items={inclusions} />
           </div>
-        )}
+        </div>
+      </section>
 
-        {stage === 'paid' && booking && (
-          <div className="mt-4 rounded-xl bg-ocean-50 p-4">
-            <p className="text-lg font-semibold text-ocean-900">🏄 You're in!</p>
-            <p className="mt-1 text-sm text-ocean-700">
-              Booking <span className="font-mono">{booking.id.slice(0, 8)}</span> is{' '}
-              <strong>{booking.status}</strong>. See you at {trip.spot.name} on {trip.starts_on}.
-            </p>
-            <Link to="/profile" className="mt-3 inline-block text-sm text-ocean-500 hover:underline">
-              View my bookings →
-            </Link>
+      {/* d. LOGISTICS — dates, seats, getting there. No day-by-day schedule. */}
+      <section id="logistics" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
+        <p className={eyebrow}>Logistics</p>
+        <h2 className={`${h2} mt-3`}>Dates and getting there</h2>
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
+          <div className="card p-6 sm:p-8">
+            <p className={eyebrow}>Dates</p>
+            <p className="mt-3 text-2xl font-extrabold tracking-tight">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="chip chip-lilac">{nights(trip.starts_on, trip.ends_on)} nights</span>
+              <span className="chip chip-ghost">Arrive {trip.starts_on.slice(5)} · leave {trip.ends_on.slice(5)}</span>
+            </div>
           </div>
-        )}
-      </aside>
+          <div className="card p-6 sm:p-8">
+            <p className={eyebrow}>Seats</p>
+            <p className="mt-3 text-2xl font-extrabold tracking-tight">{trip.capacity} residents</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className={soldOut ? 'chip chip-ghost' : 'chip chip-forest'}>
+                {soldOut ? 'Sold out' : `${trip.seats_left} of ${trip.capacity} left`}
+              </span>
+              <span className="chip chip-ghost">Sold in order of application</span>
+            </div>
+          </div>
+          <div className="card p-6 sm:p-8">
+            <p className={eyebrow}>Getting there</p>
+            <p className="mt-3 text-2xl font-extrabold tracking-tight">{spot.airport || 'By air'}</p>
+            <p className="mt-3 text-sm leading-relaxed text-mute">{spot.transfer}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* e. BOOK — the CTA card */}
+      <section className={`${container} pb-20 md:pb-28`}>
+        <div className="card flex flex-col gap-6 p-6 sm:p-10 md:flex-row md:items-center md:justify-between md:p-14">
+          <div>
+            <p className={eyebrow}>Reserve your seat</p>
+            <PriceTag trip={trip} size="lg" className="mt-3" />
+            {hasFoundingPrice(trip) && (
+              <p className="mt-2 max-w-md text-sm text-mute">
+                Launch price for the first {trip.founding_seats} residents of this edition. Regular price after that.
+              </p>
+            )}
+            <p className="mt-3 text-sm text-mute">Two-minute form, then pay by PIX. Seat held while you pay.</p>
+          </div>
+          <div className="shrink-0">{bookButton}</div>
+        </div>
+      </section>
+
+      {/* f. FAQ — shared accordion; "How does paying work?" lives here */}
+      <section id="faq" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
+        <div className="grid gap-8 md:grid-cols-[1fr_2fr] md:gap-16">
+          <div>
+            <p className={eyebrow}>FAQ</p>
+            <h2 className={`${h2} mt-3`}>Questions</h2>
+          </div>
+          <Faq />
+        </div>
+      </section>
     </article>
+  );
+}
+
+function Credit({ photo, className = '' }: { photo: Photo; className?: string }) {
+  return (
+    <a href={photo.page} target="_blank" rel="noreferrer" className={`pixel normal-case hover:underline ${className}`} title="Placeholder photo — replace with Drift's own">
+      Photo: {photo.author} / Unsplash
+    </a>
   );
 }
