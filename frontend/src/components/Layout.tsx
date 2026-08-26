@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { AuthButton } from './AuthButton';
 
 const nav = [
@@ -7,6 +7,8 @@ const nav = [
 ];
 
 export function Layout() {
+  const { pathname } = useLocation();
+  const fullBleed = pathname === '/';
   return (
     <div className="flex min-h-full flex-col">
       <header className="border-b border-sand-300/60 bg-sand-50/80 backdrop-blur">
@@ -30,11 +32,11 @@ export function Layout() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main className={fullBleed ? 'flex-1' : 'mx-auto w-full max-w-5xl flex-1 px-4 py-8'}>
         <Outlet />
       </main>
       <footer className="border-t border-sand-300/60 py-6 text-center text-xs text-ocean-700">
-        Drift — surf trips in Brazil for crypto nomads
+        Drift — surf residencies in Brazil for people who build
       </footer>
     </div>
   );

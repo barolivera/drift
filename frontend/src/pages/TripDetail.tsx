@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
-import { api, formatDateRange, formatPrice, nights, type Trip, type Booking } from '@/lib/api';
+import { api, formatDateRange, nights, hasFoundingPrice, type Trip, type Booking } from '@/lib/api';
+import { PriceTag } from '@/components/PriceTag';
 import { PaymentCheckout } from '@/components/PaymentCheckout';
 import { BookingForm } from '@/components/BookingForm';
 
@@ -127,8 +128,13 @@ export function TripDetail() {
           stage === 'idle' || stage === 'paid' ? 'md:sticky md:top-6' : ''
         }`}
       >
-        <p className="text-2xl font-semibold">{formatPrice(trip.price_usdc)}</p>
-        <p className="mt-1 text-sm text-ocean-700">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
+        <PriceTag trip={trip} size="md" />
+        {hasFoundingPrice(trip) && (
+          <p className="mt-2 text-xs text-ocean-700">
+            Launch price for the first {trip.founding_seats} residents of this edition. Regular price after that.
+          </p>
+        )}
+        <p className="mt-2 text-sm text-ocean-700">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
         <p className={`mt-1 text-sm ${soldOut ? 'text-red-700' : 'text-ocean-700'}`}>
           {soldOut ? 'Sold out' : `${trip.seats_left} of ${trip.capacity} seats left`}
         </p>

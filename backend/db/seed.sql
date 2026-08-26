@@ -28,7 +28,7 @@ CREATE TEMP TABLE seed_schedule AS SELECT $$[
 ]$$::jsonb AS schedule;
 
 INSERT INTO trips (slug, spot_id, host_id, title, location, description, description_long,
-                   starts_on, ends_on, capacity, price_usdc, includes, included, not_included,
+                   starts_on, ends_on, capacity, price_usdc, price_full_usdc, founding_seats, includes, included, not_included,
                    who_its_for, daily_schedule, level, is_published)
 SELECT
   'itamambuca-summer-2027', s.id, u.id,
@@ -36,7 +36,7 @@ SELECT
   'Itamambuca, Ubatuba, Brazil',
   'Two weeks on a three-kilometre beach four hours from São Paulo. Mornings in the water, three protected hours of work, and a demo night at the end.',
   E'Itamambuca is a three-kilometre beach at the northern end of Ubatuba, four hours from São Paulo, with a river mouth at one end and a point at the other. It works for a first week on a foam board and it works on a head-high swell, which is why it''s the right place to put sixteen people of every level in one house.\n\nThis is Drift''s first edition. Two weeks in a house a few minutes from the sand: mornings in the water, three protected hours of work in the middle of the day, and a demo night at the end. January is high summer — warm water, no wetsuit, long light until eight.',
-  DATE '2027-01-16', DATE '2027-01-30', 16, 1200,
+  DATE '2027-01-16', DATE '2027-01-30', 16, 900, 1200, 8,
   ARRAY['lodging', 'coaching', 'board', 'coworking'],
   $$[
     "14 nights, room of your choice",
@@ -59,12 +59,13 @@ ON CONFLICT (slug) DO UPDATE SET
   spot_id = EXCLUDED.spot_id, title = EXCLUDED.title, location = EXCLUDED.location,
   description = EXCLUDED.description, description_long = EXCLUDED.description_long,
   starts_on = EXCLUDED.starts_on, ends_on = EXCLUDED.ends_on, capacity = EXCLUDED.capacity,
-  price_usdc = EXCLUDED.price_usdc, includes = EXCLUDED.includes, included = EXCLUDED.included,
+  price_usdc = EXCLUDED.price_usdc, price_full_usdc = EXCLUDED.price_full_usdc,
+  founding_seats = EXCLUDED.founding_seats, includes = EXCLUDED.includes, included = EXCLUDED.included,
   not_included = EXCLUDED.not_included, who_its_for = EXCLUDED.who_its_for,
   daily_schedule = EXCLUDED.daily_schedule, level = EXCLUDED.level, is_published = EXCLUDED.is_published;
 
 INSERT INTO trips (slug, spot_id, host_id, title, location, description, description_long,
-                   starts_on, ends_on, capacity, price_usdc, includes, included, not_included,
+                   starts_on, ends_on, capacity, price_usdc, price_full_usdc, founding_seats, includes, included, not_included,
                    who_its_for, daily_schedule, level, is_published)
 SELECT
   'praia-do-rosa-autumn-2027', s.id, u.id,
@@ -72,7 +73,7 @@ SELECT
   'Praia do Rosa, Santa Catarina, Brazil',
   'The colder, cleaner edition. A horseshoe bay in Santa Catarina with offshore mornings and consistent south swell.',
   E'Praia do Rosa is a horseshoe bay in Santa Catarina, an hour south of Florianópolis, held between two green headlands with a lagoon behind it. Autumn is the season locals wait for: clean lines from the south swell, offshore mornings, and the southern right whales calving in the bay from June.\n\nThe second edition, and the colder one — bring a 3/2. The bay is more consistent and more challenging than Itamambuca, so it suits residents who''ve already got a few weeks under them, though the beach break at the north end stays friendly. Same rhythm, same house rules, different water.',
-  DATE '2027-04-24', DATE '2027-05-08', 16, 1300,
+  DATE '2027-04-24', DATE '2027-05-08', 16, 950, 1300, 8,
   ARRAY['lodging', 'coaching', 'board', 'coworking'],
   $$[
     "14 nights, room of your choice",
@@ -95,7 +96,8 @@ ON CONFLICT (slug) DO UPDATE SET
   spot_id = EXCLUDED.spot_id, title = EXCLUDED.title, location = EXCLUDED.location,
   description = EXCLUDED.description, description_long = EXCLUDED.description_long,
   starts_on = EXCLUDED.starts_on, ends_on = EXCLUDED.ends_on, capacity = EXCLUDED.capacity,
-  price_usdc = EXCLUDED.price_usdc, includes = EXCLUDED.includes, included = EXCLUDED.included,
+  price_usdc = EXCLUDED.price_usdc, price_full_usdc = EXCLUDED.price_full_usdc,
+  founding_seats = EXCLUDED.founding_seats, includes = EXCLUDED.includes, included = EXCLUDED.included,
   not_included = EXCLUDED.not_included, who_its_for = EXCLUDED.who_its_for,
   daily_schedule = EXCLUDED.daily_schedule, level = EXCLUDED.level, is_published = EXCLUDED.is_published;
 

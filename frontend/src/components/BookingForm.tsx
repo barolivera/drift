@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { ApiError, formatDateRange, formatPrice, type Booking, type BookingInput, type Trip } from '@/lib/api';
+import { ApiError, formatDateRange, type Booking, type BookingInput, type Trip } from '@/lib/api';
+import { PriceTag } from '@/components/PriceTag';
 import { useApi } from '@/hooks/useApi';
 
 export interface BookingFormProps {
@@ -109,9 +110,8 @@ export function BookingForm({ trip, onSaved, onCancel }: BookingFormProps) {
       {/* summary */}
       <div className="rounded-xl bg-sand-100 px-4 py-3 text-sm">
         <p className="font-semibold text-ocean-900">{trip.title}</p>
-        <p className="text-ocean-700">
-          {formatDateRange(trip.starts_on, trip.ends_on)} · {formatPrice(trip.price_usdc)}
-        </p>
+        <p className="text-ocean-700">{formatDateRange(trip.starts_on, trip.ends_on)}</p>
+        <PriceTag trip={trip} size="sm" className="mt-1" />
       </div>
 
       <div className="grid grid-cols-2 gap-3">

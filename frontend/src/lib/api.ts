@@ -62,6 +62,9 @@ export interface Trip {
   seats_taken: number;
   seats_left: number;
   price_usdc: string;
+  /** regular price once the founding seats are gone; null = no founding offer */
+  price_full_usdc: string | null;
+  founding_seats: number | null;
   includes: string[];
   included: string[];
   not_included: string[];
@@ -72,9 +75,19 @@ export interface Trip {
   host: { id: string; display_name: string | null; avatar_url: string | null };
 }
 
-/** "1200.00" → "from 1,200 USDC" */
+/** "900.00" → "from 900 USDC" */
 export function formatPrice(price: string | number): string {
-  return `from ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })} USDC`;
+  return `from ${formatUsdc(price)} USDC`;
+}
+
+/** "1200.00" → "1,200" */
+export function formatUsdc(price: string | number): string {
+  return Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+/** Founding-cohort offer is live when a full price exists and is higher than the current one. */
+export function hasFoundingPrice(t: Pick<Trip, 'price_usdc' | 'price_full_usdc' | 'founding_seats'>): boolean {
+  return t.price_full_usdc != null && Number(t.price_full_usdc) > Number(t.price_usdc);
 }
 
 /** 2027-01-16 → 2027-01-30 → "16 – 30 Jan 2027" / "24 Apr – 8 May 2027" */

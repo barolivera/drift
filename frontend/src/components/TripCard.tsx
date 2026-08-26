@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { formatDateRange, formatPrice, nights, type Trip } from '@/lib/api';
+import { formatDateRange, nights, type Trip } from '@/lib/api';
+import { PriceTag } from '@/components/PriceTag';
 
 export function TripCard({ trip }: { trip: Trip }) {
   const soldOut = trip.seats_left <= 0;
@@ -20,8 +21,8 @@ export function TripCard({ trip }: { trip: Trip }) {
             {formatDateRange(trip.starts_on, trip.ends_on)} · {nights(trip.starts_on, trip.ends_on)} nights
           </span>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="font-medium text-ocean-900">{formatPrice(trip.price_usdc)}</span>
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <PriceTag trip={trip} size="sm" />
           <span className={`text-xs ${soldOut ? 'text-red-700' : 'text-ocean-700'}`}>
             {soldOut ? 'Sold out' : `${trip.seats_left} of ${trip.capacity} seats left`}
           </span>

@@ -66,7 +66,9 @@ CREATE TABLE IF NOT EXISTS trips (
   starts_on       DATE NOT NULL,
   ends_on         DATE NOT NULL,
   capacity        INTEGER NOT NULL CHECK (capacity > 0),
-  price_usdc      NUMERIC(12,2) NOT NULL CHECK (price_usdc >= 0),
+  price_usdc      NUMERIC(12,2) NOT NULL CHECK (price_usdc >= 0),   -- current (founding cohort) price
+  price_full_usdc NUMERIC(12,2) CHECK (price_full_usdc >= 0),          -- regular price once founding seats are gone
+  founding_seats  INTEGER CHECK (founding_seats >= 0),                 -- seats sold at price_usdc
   includes        TEXT[] NOT NULL DEFAULT '{}',   -- 'board', 'lodging', 'coaching', 'coworking'
   level           surf_level NOT NULL DEFAULT 'all',
   is_published    BOOLEAN NOT NULL DEFAULT FALSE,
@@ -84,6 +86,8 @@ CREATE TABLE IF NOT EXISTS trips (
 
 -- Editorial content (added for the 2027 editions). `capacity` doubles as spots_total.
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS slug             TEXT UNIQUE;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS price_full_usdc  NUMERIC(12,2) CHECK (price_full_usdc >= 0);
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS founding_seats   INTEGER CHECK (founding_seats >= 0);
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS location         TEXT;          -- 'Itamambuca, Ubatuba, Brazil'
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS description_long TEXT;
 ALTER TABLE trips ADD COLUMN IF NOT EXISTS included         JSONB NOT NULL DEFAULT '[]'::jsonb;  -- string[]
