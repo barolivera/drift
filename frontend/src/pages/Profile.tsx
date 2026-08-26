@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
 import { useApi } from '@/hooks/useApi';
 import type { Booking, Me } from '@/lib/api';
+
+const STATUS_CHIP: Record<string, string> = {
+  confirmed: 'chip chip-forest',
+  pending: 'chip chip-mustard',
+  cancelled: 'chip chip-ghost',
+};
 
 export function Profile() {
   const { ready, authenticated, login } = usePrivy();
@@ -20,12 +27,12 @@ export function Profile() {
       .catch((e) => setError(e.message));
   }, [ready, authenticated, call]);
 
-  if (!ready) return <p className="text-ocean-700">Loading…</p>;
+  if (!ready) return <p className="text-mute">Loading…</p>;
   if (!authenticated) {
     return (
-      <div className="text-center">
-        <p className="text-ocean-700">Log in to see your bookings.</p>
-        <button onClick={login} className="mt-4 rounded-full bg-ocean-500 px-5 py-2 text-white">
+      <div className="card mx-auto max-w-md p-8 text-center">
+        <p className="text-mute">Log in to see your bookings.</p>
+        <button onClick={login} className="btn-primary mt-5">
           Log in
         </button>
       </div>
@@ -33,27 +40,44 @@ export function Profile() {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-2xl border border-sand-300/60 bg-white p-6">
-        <h2 className="text-lg font-semibold">{me?.display_name ?? me?.email ?? 'Nomad'}</h2>
-        <p className="font-mono text-xs text-ocean-700">{me?.wallet_address ?? 'no wallet linked'}</p>
+    <div className="mx-auto max-w-3xl space-y-8">
+      <section className="card p-6 sm:p-8">
+        <p className="pixel text-mute">Account</p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight">{me?.display_name ?? me?.email ?? 'Nomad'}</h1>
+        <p className="pixel mt-3 text-mute">{me?.wallet_address ?? 'no wallet linked'}</p>
       </section>
       <section>
-        <h2 className="mb-3 text-lg font-semibold">My bookings</h2>
+        <div className="mb-4 flex items-end justify-between">
+          <h2 className="text-xl font-bold tracking-tight">My bookings</h2>
+          <Link to="/trips" className="btn-secondary btn-sm">
+            Browse trips
+          </Link>
+        </div>
         {error && <p className="text-red-700">{error}</p>}
         {bookings.length === 0 ? (
-          <p className="text-ocean-700">No bookings yet.</p>
+          <p className="text-mute">No bookings yet.</p>
         ) : (
-          <ul className="divide-y divide-sand-300/60 rounded-2xl border border-sand-300/60 bg-white">
+          <ul className="card divide-y divide-line">
             {bookings.map((b) => (
-              <li key={b.id} className="flex items-center justify-between p-4">
+              <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 p-5">
                 <div>
-                  <p className="font-medium">{b.title}</p>
-                  <p className="text-sm text-ocean-700">
-                    {b.spot.name} · {b.starts_on} → {b.ends_on}
-                  </p>
+                  <p className="font-semibold">{b.title}</p>
+                  <p className="mt-1 text-sm text-mute">{b.spot.name}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="chip chip-lilac">
+                      {b.starts_on} → {b.ends_on}
+                    </span>
+                    <span className="pixel self-center text-mute">{b.id.slice(0, 8)}</span>
+                  </div>
                 </div>
-                <span className="rounded-full bg-sand-100 px-3 py-1 text-xs uppercase tracking-wide">{b.status}</span>
+                <div className="flex items-center gap-3">
+                  <span className={STATUS_CHIP[b.status] ?? 'chip chip-ghost'}>{b.status}</span>
+                  {b.status === 'pending' && (
+                    <Link to={`/trips/${b.trip_id}/book/${b.id}`} className="btn-primary btn-sm">
+                      Pay now
+                    </Link>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

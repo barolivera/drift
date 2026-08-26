@@ -1,45 +1,67 @@
 @import "tailwindcss";
 
-/* ─── Drift design tokens ───────────────────────────────────────────
-   Colours: ocean (brand blue), sand (warm neutrals), ink (deep sea).
-   Type:    display = Bricolage Grotesque (headlines, treated as graphics)
-            sans    = Instrument Sans (body)
-   Scale:   text-display-* are fluid (clamp) so 375px still works.     */
+/* ─── Drift design tokens — pass 2 ──────────────────────────────────
+   Neutral base (paper + one light surface) with colour used in small
+   doses: chips, icons, gradient blobs, hover states. Coral is the only
+   colour that appears as a solid button.
+   Type: Manrope everywhere; Geist Pixel only at small sizes (eyebrows,
+   labels, ids, date badges).                                           */
 @theme {
-  --color-ocean-50: #eef8fb;
-  --color-ocean-100: #d6eef5;
-  --color-ocean-300: #7fcbe0;
-  --color-ocean-500: #1e9bc0;
-  --color-ocean-700: #146a86;
-  --color-ocean-800: #0f4f66;
-  --color-ocean-900: #0b3c4d;
-  --color-ink: #071c24;
-  --color-sand-50: #fdfaf3;
-  --color-sand-100: #f7efdc;
-  --color-sand-200: #efe3c4;
-  --color-sand-300: #e8d3a3;
-  --color-sand-500: #c9a55e;
-  --color-coral: #ff6b4a;
+  /* neutrals */
+  --color-paper: #fbfcfd;
+  --color-surface: #f4f3ef;
+  --color-surface-2: #ebeae4;
+  --color-line: #e4e2dc;
+  --color-ink: #16181c;
+  --color-mute: #6f727a;
 
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  /* palette — small doses only */
+  --color-forest: #224e35;
+  --color-forest-soft: #dfe9e2;
+  --color-lilac: #b3abeb;
+  --color-lilac-soft: #e8e5f8;
+  --color-mustard: #f1db82;
+  --color-mustard-soft: #faf2cf;
+  --color-coral: #ec622a;
+  --color-coral-600: #d2521f;
+  --color-coral-soft: #fbe3d8;
 
-  --text-display-2xl: clamp(2.9rem, 11.5vw, 9.5rem);
-  --text-display-2xl--line-height: 0.92;
-  --text-display-2xl--letter-spacing: -0.03em;
-  --text-display-xl: clamp(2.4rem, 8vw, 6.5rem);
-  --text-display-xl--line-height: 0.95;
-  --text-display-xl--letter-spacing: -0.025em;
-  --text-display-lg: clamp(1.9rem, 4.6vw, 3.75rem);
-  --text-display-lg--line-height: 1.02;
-  --text-display-lg--letter-spacing: -0.02em;
-  --text-display-md: clamp(1.4rem, 2.6vw, 2.25rem);
-  --text-display-md--line-height: 1.1;
-  --text-display-md--letter-spacing: -0.015em;
-  --text-lede: clamp(1.1rem, 1.6vw, 1.375rem);
-  --text-lede--line-height: 1.45;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
+
+  --text-display-2xl: clamp(2.75rem, 7.5vw, 6rem);
+  --text-display-2xl--line-height: 1.0;
+  --text-display-2xl--letter-spacing: -0.035em;
+  --text-display-xl: clamp(2.4rem, 6vw, 4.75rem);
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: clamp(1.9rem, 4vw, 3.25rem);
+  --text-display-lg--line-height: 1.05;
+  --text-display-lg--letter-spacing: -0.025em;
+  --text-display-md: clamp(1.4rem, 2.4vw, 2rem);
+  --text-display-md--line-height: 1.15;
+  --text-display-md--letter-spacing: -0.02em;
+  --text-section: clamp(1.75rem, 3vw, 2.5rem);
+  --text-section--line-height: 1.1;
+  --text-section--letter-spacing: -0.025em;
+  --text-lede: clamp(1.05rem, 1.5vw, 1.25rem);
+  --text-lede--line-height: 1.5;
+  --text-pixel: 0.6875rem;
+  --text-pixel--line-height: 1;
+  --text-pixel--letter-spacing: 0.08em;
 
   --spacing-section: clamp(4rem, 10vw, 9rem);
+  --shadow-soft: 0 1px 2px rgb(22 24 28 / 0.03), 0 12px 32px -16px rgb(22 24 28 / 0.12);
+  --shadow-pop: 0 2px 6px rgb(22 24 28 / 0.06), 0 24px 48px -20px rgb(22 24 28 / 0.18);
+}
+
+@font-face {
+  font-family: "Geist Pixel";
+  src: url("/fonts/GeistPixel-Square.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 html {
@@ -51,7 +73,7 @@ html, body, #root {
 }
 
 body {
-  @apply bg-sand-50 text-ocean-900 antialiased;
+  @apply bg-paper font-sans text-ink antialiased;
 }
 
 /* Native accordion chevron */
@@ -60,4 +82,122 @@ details > summary {
 }
 details > summary::-webkit-details-marker {
   display: none;
+}
+
+/* ── Component utilities (Tailwind v4 @utility so they work with variants) ── */
+
+/* Small-size only: eyebrows, labels, ids, badges. Never headings. */
+@utility pixel {
+  font-family: var(--font-pixel);
+  font-size: var(--text-pixel);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Buttons — pill everywhere. Primary is the only solid colour on the page. */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  transition: background-color 150ms, border-color 150ms, color 150ms;
+  &:disabled { cursor: not-allowed; opacity: 0.5; }
+}
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  background-color: var(--color-coral);
+  color: var(--color-paper);
+  transition: background-color 150ms;
+  &:hover:not(:disabled) { background-color: var(--color-coral-600); }
+  &:disabled { cursor: not-allowed; opacity: 0.5; }
+}
+@utility btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  transition: border-color 150ms;
+  &:hover:not(:disabled) { border-color: var(--color-ink); }
+  &:disabled { cursor: not-allowed; opacity: 0.5; }
+}
+@utility btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; line-height: 1.5rem; }
+@utility btn-sm { padding: 0.375rem 1rem; font-size: 0.875rem; }
+
+/* Chips — the colour lives here. */
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.375rem 0.625rem;
+  white-space: nowrap;
+  font-family: var(--font-pixel);
+  font-size: var(--text-pixel);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+@utility chip-lilac { background-color: var(--color-lilac); color: var(--color-ink); }
+@utility chip-mustard { background-color: var(--color-mustard); color: var(--color-ink); }
+@utility chip-forest { background-color: var(--color-forest); color: var(--color-paper); }
+@utility chip-coral { background-color: var(--color-coral); color: var(--color-paper); }
+@utility chip-ghost { background-color: var(--color-surface-2); color: var(--color-ink); }
+
+/* Cards — surface, no border, soft shadow. */
+@utility card { border-radius: 1.5rem; background-color: var(--color-surface); box-shadow: var(--shadow-soft); }
+@utility card-paper { border-radius: 1.5rem; background-color: var(--color-paper); box-shadow: var(--shadow-soft); }
+
+/* Form fields */
+@utility field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-line);
+  background-color: var(--color-paper);
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 150ms;
+  &::placeholder { color: color-mix(in oklab, var(--color-mute) 60%, transparent); }
+  &:focus { border-color: var(--color-ink); }
+}
+
+/* Grainy gradient blob (hero). Colours from the palette, blurred, low opacity. */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  pointer-events: none;
+}
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
 }

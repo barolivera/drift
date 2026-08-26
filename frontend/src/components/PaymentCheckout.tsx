@@ -272,9 +272,9 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
 
   if (phase === 'auth') {
     return (
-      <div className="rounded-xl border border-sand-300/60 bg-sand-50 p-4 text-sm">
-        <p className="text-ocean-700">Log in to pay for this trip.</p>
-        <button onClick={login} className="mt-3 rounded-full bg-ocean-500 px-4 py-1.5 font-medium text-white hover:bg-ocean-700">
+      <div className="rounded-2xl bg-surface p-4 text-sm">
+        <p className="text-mute">Log in to pay for this trip.</p>
+        <button onClick={login} className="btn-primary btn-sm mt-3">
           Log in
         </button>
       </div>
@@ -300,7 +300,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
   return (
     <div className="space-y-3">
       {P2P.demo && (
-        <p className="rounded-lg bg-sand-100 px-3 py-2 text-xs text-ocean-700">
+        <p className="rounded-xl bg-mustard-soft px-3 py-2 text-xs text-ink/80">
           Demo mode — no transaction is sent and the payment flow is simulated.
         </p>
       )}
@@ -308,7 +308,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
       {orderId && !payment.confirmed && !payment.failed && (
         <Status>
           Waiting for payment confirmation…
-          {payment.status && <span className="ml-1 text-xs text-ocean-500">({payment.status})</span>}
+          {payment.status && <span className="pixel ml-1 text-mute">{payment.status}</span>}
         </Status>
       )}
       <Checkout
@@ -339,8 +339,8 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
 
 function Status({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-sand-300/60 bg-white p-4 text-sm text-ocean-700">
-      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-ocean-300 border-t-ocean-700" />
+    <div className="flex items-center gap-2 rounded-2xl bg-paper p-4 text-sm text-mute shadow-soft">
+      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-lilac border-t-ink" />
       {children}
     </div>
   );
