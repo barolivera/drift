@@ -72,11 +72,56 @@ export interface Trip {
   host: { id: string; display_name: string | null; avatar_url: string | null };
 }
 
+/** "1200.00" → "from 1,200 USDC" */
+export function formatPrice(price: string | number): string {
+  return `from ${Number(price).toLocaleString('en-US', { maximumFractionDigits: 0 })} USDC`;
+}
+
+/** 2027-01-16 → 2027-01-30 → "16 – 30 Jan 2027" / "24 Apr – 8 May 2027" */
+export function formatDateRange(start: string, end: string): string {
+  const s = new Date(start + 'T00:00:00Z');
+  const e = new Date(end + 'T00:00:00Z');
+  const day = (d: Date) => d.getUTCDate();
+  const mon = (d: Date) => d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const year = e.getUTCFullYear();
+  if (s.getUTCMonth() === e.getUTCMonth()) return `${day(s)} – ${day(e)} ${mon(e)} ${year}`;
+  return `${day(s)} ${mon(s)} – ${day(e)} ${mon(e)} ${year}`;
+}
+
+/** Nights between two YYYY-MM-DD dates. */
+export function nights(start: string, end: string): number {
+  return Math.round((Date.parse(end + 'T00:00:00Z') - Date.parse(start + 'T00:00:00Z')) / 86_400_000);
+}
+
+export type BookingSurfLevel = 'never' | 'beginner' | 'intermediate' | 'advanced';
+
+/** Body of POST /api/bookings — the registration form. */
+export interface BookingInput {
+  trip_id: string;
+  seats?: number;
+  full_name: string;
+  email: string;
+  telegram: string; // without '@'
+  country: string;
+  surf_level: BookingSurfLevel;
+  working_on: string;
+  dietary?: string;
+  agreed_terms: true;
+}
+
 export interface Booking {
   id: string;
   trip_id: string;
   seats: number;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  full_name?: string | null;
+  email?: string | null;
+  telegram?: string | null;
+  country?: string | null;
+  surf_level?: BookingSurfLevel | null;
+  working_on?: string | null;
+  dietary?: string | null;
+  agreed_terms_at?: string | null;
   title: string;
   starts_on: string;
   ends_on: string;

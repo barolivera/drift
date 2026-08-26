@@ -13,9 +13,12 @@ import { CURRENCIES, DRIFT_INTEGRATOR_ABI, P2P, routingConfigured, usdcToUnits, 
 
 export interface PaymentCheckoutProps {
   tripId: string;
-  /** Trip price in USDC, e.g. "4500.00" or 4500. */
+  /** Trip price in USDC, e.g. "1200.00" or 1200. */
   price: string | number;
   productName?: string;
+  /** Pending booking already created by <BookingForm>. When omitted the
+   *  component creates/reuses one itself (legacy path). */
+  booking?: Booking;
   /** Fired once the order reaches COMPLETED and the backend confirmed the booking. */
   onSuccess: (booking: Booking) => void;
   onCancel?: () => void;
@@ -44,13 +47,13 @@ const publicClient = createPublicClient({ chain: baseSepolia, transport: http() 
  * runs is outdated). That is why the backend registration lives in
  * `onOrderPlaced`, which fires in both modes.
  */
-export function PaymentCheckout({ tripId, price, productName, onSuccess, onCancel }: PaymentCheckoutProps) {
+export function PaymentCheckout({ tripId, price, productName, booking: initialBooking, onSuccess, onCancel }: PaymentCheckoutProps) {
   const { ready, authenticated, login } = usePrivy();
   const call = useApi();
   const walletSigner = useCheckoutSigner();
 
   const [phase, setPhase] = useState<Phase>('auth');
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const [booking, setBooking] = useState<Booking | null>(initialBooking ?? null);
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const successFired = useRef(false);
@@ -87,7 +90,10 @@ export function PaymentCheckout({ tripId, price, productName, onSuccess, onCance
       }
       return;
     }
-    if (booking) return;
+    if (booking) {
+      setPhase((p) => (p === 'auth' || p === 'creating-booking' ? 'ready' : p));
+      return;
+    }
 
     let cancelled = false;
     setPhase('creating-booking');

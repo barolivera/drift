@@ -103,10 +103,28 @@ CREATE TABLE IF NOT EXISTS bookings (
   seats       INTEGER NOT NULL DEFAULT 1 CHECK (seats > 0),
   status      booking_status NOT NULL DEFAULT 'pending',
   notes       TEXT,
+  -- Registration form (filled before checkout; does not affect the status machine)
+  full_name        TEXT,
+  email            TEXT,
+  telegram         TEXT,          -- stored without the leading '@'
+  country          TEXT,
+  surf_level       TEXT,          -- 'never' | 'beginner' | 'intermediate' | 'advanced'
+  working_on       TEXT,
+  dietary          TEXT,
+  agreed_terms_at  TIMESTAMPTZ,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (trip_id, user_id)
 );
+
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS full_name       TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS email           TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS telegram        TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS country         TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS surf_level      TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS working_on      TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS dietary         TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS agreed_terms_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS bookings_user_idx ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS bookings_trip_idx ON bookings(trip_id);

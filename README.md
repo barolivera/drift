@@ -33,9 +33,9 @@ sequenceDiagram
     participant M as PIX merchant
     participant WH as P2P webhook
 
-    U->>FE: Book Now
-    FE->>API: POST /api/bookings {trip_id}
-    API->>DB: booking status = pending
+    U->>FE: Book Now → registration form
+    FE->>API: POST /api/bookings {trip_id, form fields}
+    API->>DB: booking status = pending (+ form data)
     API-->>FE: booking {id}
     FE->>FE: render <Checkout> (BRL / PIX)
     U->>FE: Pay now
@@ -57,7 +57,7 @@ sequenceDiagram
     FE->>U: "You're in!" 🏄
 ```
 
-Text version: **Book Now → booking `pending` → `bookTrip` on-chain (UserProxy → Diamond) →
+Text version: **Book Now → registration form → booking `pending` → `bookTrip` on-chain (UserProxy → Diamond) →
 p2pkit order placed → user pays PIX → merchant releases USDC → `onOrderComplete` pays the
 treasury → webhook (or the widget's `onComplete` → `/complete`, which verifies the on-chain
 session is `Paid`) → booking `confirmed`.** The frontend polls every 2 s, so whichever path
@@ -144,7 +144,8 @@ Other scripts: `npm run typecheck` · `npm run build` · `npm run contract:compi
 ```
 drift/
 ├── frontend/src/
-│   ├── components/PaymentCheckout.tsx   p2pkit <Checkout> + booking/registration/confirmation
+│   ├── components/BookingForm.tsx       registration form → POST /api/bookings (pending)
+│   ├── components/PaymentCheckout.tsx   p2pkit <Checkout> + order registration/confirmation
 │   ├── hooks/useCheckoutSigner.ts       Privy wallet → CheckoutSigner
 │   ├── hooks/usePaymentStatus.ts        2 s polling of /api/payments/:orderId
 │   ├── lib/p2p.ts                       addresses, currencies, bookTrip ABI
@@ -161,13 +162,35 @@ drift/
 └── docker-compose.yml                   postgres
 ```
 
+## Data model
+
+`backend/db/schema.sql` — all statements are idempotent (`CREATE … IF NOT EXISTS`,
+`ADD COLUMN IF NOT EXISTS`), so `npm run db:migrate` is safe to re-run on an existing database.
+
+| Table | Purpose / notable columns |
+|---|---|
+| `users` | one row per Privy identity (`privy_did`), `wallet_address`, `is_host` |
+| `spots` | surf spot: `slug`, `city`, `state`, `capacity`, `daily_rate_usdc`, `level` |
+| `trips` | an edition at a spot. Booking fields: `starts_on`, `ends_on`, `capacity` (= total seats), `price_usdc`, `level`, `is_published`. Editorial fields: `slug`, `location`, `description`, `description_long`, `included` / `not_included` (jsonb string[]), `who_its_for`, `daily_schedule` (jsonb `{time, title, detail, highlight?}[]` — `highlight` marks the 10:00 deep-work block) |
+| `bookings` | `(trip_id, user_id)` unique, `seats`, `status` pending → confirmed / cancelled / completed. Registration form (saved before checkout, no effect on status): `full_name`, `email`, `telegram` (no `@`), `country`, `surf_level` (`never`/`beginner`/`intermediate`/`advanced`), `working_on`, `dietary`, `agreed_terms_at` |
+| `payments` | one per attempt: `method` (`pix_p2pkit` / `usdc`), `status`, `amount_usdc`, `tx_hash`, `p2pkit_order_id` (Diamond orderId), `p2pkit_payload` |
+| `trip_availability` (view) | `seats_taken` / `seats_left` per trip from pending + confirmed bookings |
+
+`backend/db/seed.sql` upserts the host, the two spots and the two 2027 editions (by `slug`), so
+editing copy and re-running `npm run db:seed` updates the rows in place:
+
+| Edition | Dates | Seats | Price |
+|---|---|---|---|
+| Itamambuca — Summer Edition (`itamambuca-summer-2027`) | 16 – 30 Jan 2027 | 16 | from 1,200 USDC |
+| Praia do Rosa — Autumn Edition (`praia-do-rosa-autumn-2027`) | 24 Apr – 8 May 2027 | 16 | from 1,300 USDC |
+
 ## API
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | GET | `/api/trips`, `/api/trips/:id`, `/api/spots` | – | catalogue (with live `seats_left`) |
 | GET/PATCH | `/api/auth/me` | Privy | profile |
-| GET/POST | `/api/bookings`, `POST /api/bookings/:id/cancel` | Privy | reservations (row-locked against overselling; one per user per trip) |
+| GET/POST | `/api/bookings`, `POST /api/bookings/:id/cancel` | Privy | reservations. `POST` takes the registration form (`full_name`, `email`, `telegram`, `country`, `surf_level`, `working_on`, `dietary?`, `agreed_terms: true`) and creates the `pending` booking (row-locked against overselling; one per user per trip — a re-submit on a still-pending booking updates the form data) |
 | POST | `/api/payments/p2pkit` | Privy | register a placed Diamond order |
 | GET | `/api/payments/:orderId` | Privy | poll payment + booking status |
 | POST | `/api/payments/p2pkit/:orderId/complete` | Privy | widget reported COMPLETED; verified on-chain when `DRIFT_INTEGRATOR_ADDRESS` is set |
