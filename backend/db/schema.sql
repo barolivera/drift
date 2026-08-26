@@ -70,10 +70,26 @@ CREATE TABLE IF NOT EXISTS trips (
   includes        TEXT[] NOT NULL DEFAULT '{}',   -- 'board', 'lodging', 'coaching', 'coworking'
   level           surf_level NOT NULL DEFAULT 'all',
   is_published    BOOLEAN NOT NULL DEFAULT FALSE,
+  slug             TEXT UNIQUE,
+  location         TEXT,
+  description_long TEXT,
+  included         JSONB NOT NULL DEFAULT '[]'::jsonb,
+  not_included     JSONB NOT NULL DEFAULT '[]'::jsonb,
+  who_its_for      TEXT,
+  daily_schedule   JSONB NOT NULL DEFAULT '[]'::jsonb,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT trips_dates_chk CHECK (ends_on >= starts_on)
 );
+
+-- Editorial content (added for the 2027 editions). `capacity` doubles as spots_total.
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS slug             TEXT UNIQUE;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS location         TEXT;          -- 'Itamambuca, Ubatuba, Brazil'
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS description_long TEXT;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS included         JSONB NOT NULL DEFAULT '[]'::jsonb;  -- string[]
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS not_included     JSONB NOT NULL DEFAULT '[]'::jsonb;  -- string[]
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS who_its_for      TEXT;
+ALTER TABLE trips ADD COLUMN IF NOT EXISTS daily_schedule   JSONB NOT NULL DEFAULT '[]'::jsonb;  -- {time,title,detail,highlight?}[]
 
 CREATE INDEX IF NOT EXISTS trips_spot_idx    ON trips(spot_id);
 CREATE INDEX IF NOT EXISTS trips_host_idx    ON trips(host_id);

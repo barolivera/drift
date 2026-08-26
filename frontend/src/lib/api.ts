@@ -39,16 +39,34 @@ export interface Spot {
   cover_url: string | null;
 }
 
+export interface ScheduleItem {
+  time: string;
+  title: string;
+  detail: string;
+  /** true on the deep-work block — the product's differentiator */
+  highlight?: boolean;
+}
+
 export interface Trip {
   id: string;
+  slug: string | null;
   title: string;
+  /** e.g. "Itamambuca, Ubatuba, Brazil" */
+  location: string | null;
   description: string | null;
+  description_long: string | null;
   starts_on: string;
   ends_on: string;
+  /** total seats (spots_total) */
   capacity: number;
+  seats_taken: number;
   seats_left: number;
   price_usdc: string;
   includes: string[];
+  included: string[];
+  not_included: string[];
+  who_its_for: string | null;
+  daily_schedule: ScheduleItem[];
   level: SurfLevel;
   spot: Spot;
   host: { id: string; display_name: string | null; avatar_url: string | null };

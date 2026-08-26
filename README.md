@@ -1,7 +1,9 @@
 # Drift 🏄
 
-**Drift** is a booking platform for surf trips in Brazil aimed at crypto nomads: week- or
-month-long stays (lodging, boards, coaching, coworking) at spots like Itamambuca or Praia do Rosa.
+**Drift** is a booking platform for surf trips in Brazil aimed at crypto nomads: two-week
+residencies for sixteen people (lodging, boards, coaching, a dedicated work room and a demo night)
+at spots like Itamambuca or Praia do Rosa — three protected hours of deep work every day is the one
+house rule.
 Nomads log in with Privy (email, Google or wallet), reserve a seat and pay in **local fiat via
 PIX**; Drift receives **USDC on Base** through a [p2pkit / P2P.me](https://p2p.me) integrator
 contract — no card processor, no bank account in Brazil required, and the on-chain order is the
@@ -131,7 +133,7 @@ and watch the booking confirm in real time:
 # orderId = the id logged by the frontend ("[checkout] order placed demo…")
 curl -X POST http://localhost:4000/webhooks/p2pkit \
   -H "Content-Type: application/json" \
-  -d '{"orderId":"demo1787703162992","status":"completed","txHash":"0x…","amount":5000}'
+  -d '{"orderId":"demo1787703162992","status":"completed","txHash":"0x…","amount":1200}'
 ```
 
 Other scripts: `npm run typecheck` · `npm run build` · `npm run contract:compile -w backend` ·
@@ -146,7 +148,7 @@ drift/
 │   ├── hooks/useCheckoutSigner.ts       Privy wallet → CheckoutSigner
 │   ├── hooks/usePaymentStatus.ts        2 s polling of /api/payments/:orderId
 │   ├── lib/p2p.ts                       addresses, currencies, bookTrip ABI
-│   └── pages/                           Home, Trips, TripDetail (Book Now), Profile
+│   └── pages/                           Home, Trips, TripDetail (long copy, included/not, daily timeline, Book Now), Profile
 ├── backend/src/
 │   ├── routes/                          auth, spots, trips, bookings, payments, webhooks
 │   ├── middleware/auth.ts               Privy token verification → req.user
@@ -154,7 +156,7 @@ drift/
 │   ├── contracts/DriftIntegrator.sol    IP2PIntegrator implementation (+ vendored p2p/ files)
 │   ├── contracts/deploy.ts              solc + ethers deploy script
 │   └── db/                              pool, migrate, seed
-├── backend/db/schema.sql · seed.sql
+├── backend/db/schema.sql · seed.sql    data model + the two 2027 editions
 ├── backend/DEPLOY.md                    contract deployment + whitelisting guide
 └── docker-compose.yml                   postgres
 ```
