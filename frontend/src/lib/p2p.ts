@@ -29,7 +29,12 @@ export const P2P = {
   demo: env.VITE_P2P_DEMO === 'true',
 } as const;
 
-/** Drift only sells in Brazil → BRL via PIX. */
+/**
+ * Currencies offered at checkout. No circleId → the widget routes via the
+ * subgraph (VITE_P2P_SUBGRAPH_URL). On Base Sepolia the subgraph currently
+ * exposes ARS, BRL, IDR and INR with online staked merchants — all four are
+ * offered. VITE_P2P_BRL_CIRCLE_ID pins BRL to a specific circle if set.
+ */
 export const CURRENCIES: CurrencyOption[] = [
   {
     symbol: 'BRL',
@@ -37,6 +42,9 @@ export const CURRENCIES: CurrencyOption[] = [
     paymentMethod: 'PIX',
     ...(P2P.brlCircleId !== undefined ? { circleId: P2P.brlCircleId } : {}),
   },
+  { symbol: 'ARS', flag: '🇦🇷', paymentMethod: 'Alias' },
+  { symbol: 'INR', flag: '🇮🇳', paymentMethod: 'UPI' },
+  { symbol: 'IDR', flag: '🇮🇩', paymentMethod: 'QRIS' },
 ];
 
 /** Can the widget route an order? Either a subgraph or a pinned circle is needed. */

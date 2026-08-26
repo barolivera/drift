@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_P2P_SUBGRAPH_URL?: string;
   readonly VITE_P2P_BRL_CIRCLE_ID?: string;
   readonly VITE_P2P_DEMO?: string;
+  readonly VITE_PRIVY_GAS_SPONSORSHIP?: string;
 }
 
 interface ImportMeta {
