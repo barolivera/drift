@@ -58,9 +58,9 @@ export function TripDetail() {
           <button
             onClick={bookNow}
             disabled={!ready || soldOut}
-            className="mt-4 w-full rounded-full bg-ocean-500 py-2.5 font-medium text-white hover:bg-ocean-700 disabled:opacity-50"
+            className="mt-4 w-full rounded-full bg-ocean-500 py-2.5 font-medium text-white hover:bg-ocean-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-ocean-500"
           >
-            {soldOut ? 'Sold out' : authenticated || P2P.demo ? 'Book Now' : 'Log in to book'}
+            {!ready ? 'Loading…' : soldOut ? 'Sold out' : authenticated || P2P.demo ? 'Book Now' : 'Log in to book'}
           </button>
         )}
 
