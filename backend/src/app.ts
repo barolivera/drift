@@ -10,11 +10,33 @@ import { paymentsRouter } from './routes/payments.js';
 import { spotsRouter } from './routes/spots.js';
 import { webhooksRouter } from './routes/webhooks.js';
 
+/**
+ * CORS_ORIGIN is a comma-separated list. An entry like `*.vercel.app` allows
+ * any origin ending in `.vercel.app` (preview deployments); everything else
+ * must match exactly. Requests without an Origin (curl, health checks) pass.
+ */
+function corsOrigin(list: string): cors.CorsOptions['origin'] {
+  const entries = list.split(',').map((s) => s.trim()).filter(Boolean);
+  const exact = new Set(entries.filter((e) => !e.startsWith('*.')));
+  const suffixes = entries.filter((e) => e.startsWith('*.')).map((e) => e.slice(1)); // ".vercel.app"
+  return (origin, cb) => {
+    if (!origin) return cb(null, true);
+    let host = '';
+    try {
+      host = new URL(origin).hostname;
+    } catch {
+      return cb(null, false);
+    }
+    const ok = exact.has(origin) || suffixes.some((s) => host.endsWith(s));
+    cb(null, ok);
+  };
+}
+
 export function createApp() {
   const app = express();
 
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGIN.split(','), credentials: true }));
+  app.use(cors({ origin: corsOrigin(env.CORS_ORIGIN), credentials: true }));
   app.use(morgan(isProd ? 'combined' : 'dev'));
 
   // Webhook needs the raw body — mount it before express.json().

@@ -161,3 +161,54 @@ a stale `UserProxy` will fail P2P's bytecode review.
 
 Contracts are immutable: to change limits or logic, deploy a new version, re-verify, and file
 a new whitelist request (and a deregister request for the old address).
+
+## Rotating the treasury
+
+`owner` is immutable, so the deployer key keeps admin forever; the only thing that
+can be moved is where the USDC lands:
+
+```bash
+npm run contract:set-treasury -- 0xNewTreasury            # Base Sepolia
+npm run contract:set-treasury -- 0xNewTreasury --network base
+```
+
+Signs with `PRIVATE_KEY` (must be the owner), then update `DRIFT_TREASURY_ADDRESS`
+wherever the backend runs. A full key rotation (new owner) means redeploying the
+integrator with a new deployer and getting the new address + `proxyImpl`
+whitelisted by P2P.me again.
+
+## Hosting — Railway (API + Postgres) and Vercel (web)
+
+The repo is an npm-workspaces monorepo (`frontend/`, `backend/`); both hosts build
+from the repo root.
+
+**Railway** — `railway.json` at the root drives the API service:
+build `npm ci && npm run build -w backend`, start `npm run start -w backend`,
+health check `GET /health`. Add a Postgres service and reference it as
+`DATABASE_URL=${{Postgres.DATABASE_URL}}`. Runtime variables (see
+`backend/src/config/env.ts`): `NODE_ENV=production`, `PORT` (Railway injects it),
+`CORS_ORIGIN` (comma-separated; `*.vercel.app` allows preview deployments),
+`DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `P2PKIT_API_KEY`,
+`P2PKIT_API_URL`, `P2PKIT_WEBHOOK_SECRET`, `P2PKIT_CHAIN`, `P2PKIT_ASSET`,
+`DRIFT_TREASURY_ADDRESS`, `DRIFT_INTEGRATOR_ADDRESS`, `BASE_SEPOLIA_RPC`.
+`PRIVATE_KEY` and `ETHERSCAN_API_KEY` are **not** runtime variables — they only
+serve the contract scripts, keep them off the host.
+
+Migrations and seed run from your machine against the Railway database:
+
+```bash
+railway run npm run db:migrate -w backend   # backend/db/schema.sql (idempotent)
+railway run npm run db:seed -w backend      # backend/db/seed.sql (upserts by slug)
+```
+
+P2P.me webhook: point it at `https://<railway-domain>/webhooks/p2pkit` and set the
+same `P2PKIT_WEBHOOK_SECRET` on both sides (sent as `x-webhook-secret`).
+
+**Vercel** — project root directory `frontend`; `frontend/vercel.json` installs and
+builds from the repo root (`cd .. && npm ci`, `cd .. && npm run build -w frontend`)
+and rewrites every path to `index.html` for the React Router routes. Variables:
+`VITE_API_URL` (the Railway domain, no trailing slash), `VITE_PRIVY_APP_ID`,
+`VITE_CHAIN`, `VITE_DRIFT_INTEGRATOR_ADDRESS`, `VITE_P2P_DIAMOND_ADDRESS`,
+`VITE_USDC_ADDRESS`, `VITE_P2P_SUBGRAPH_URL` (or `VITE_P2P_BRL_CIRCLE_ID`),
+`VITE_PRIVY_GAS_SPONSORSHIP`, `VITE_P2P_DEMO`, `VITE_TELEGRAM_INVITE_URL`.
+Add the Vercel domain to Privy's allowed origins as well.
