@@ -11,6 +11,8 @@ export interface BookingFormProps {
   onCancel?: () => void;
   /** Hide the trip summary when the host page already shows one. */
   showSummary?: boolean;
+  /** Prefill from an existing booking (editing details before paying). */
+  initial?: Booking | null;
 }
 
 const SURF_LEVELS: { value: BookingInput['surf_level']; label: string }[] = [
@@ -36,20 +38,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * details on the pending booking (POST /api/bookings) and moves straight on
  * to payment — it is not an application filter.
  */
-export function BookingForm({ trip, onSaved, onCancel, showSummary = true }: BookingFormProps) {
+export function BookingForm({ trip, onSaved, onCancel, showSummary = true, initial = null }: BookingFormProps) {
   const { user } = usePrivy();
   const call = useApi();
   const privyEmail = user?.email?.address ?? user?.google?.email ?? '';
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState(privyEmail);
-  const [telegram, setTelegram] = useState('');
-  const [country, setCountry] = useState('');
-  const [surfLevel, setSurfLevel] = useState<BookingInput['surf_level'] | ''>('');
-  const [workingOn, setWorkingOn] = useState('');
-  const [dietary, setDietary] = useState('');
-  const [agreed, setAgreed] = useState(false);
+  const [initialFirst, ...initialRest] = (initial?.full_name ?? '').split(' ');
+  const [firstName, setFirstName] = useState(initialFirst ?? '');
+  const [lastName, setLastName] = useState(initialRest.join(' '));
+  const [email, setEmail] = useState(initial?.email ?? privyEmail);
+  const [telegram, setTelegram] = useState(initial?.telegram ?? '');
+  const [country, setCountry] = useState(initial?.country ?? '');
+  const [surfLevel, setSurfLevel] = useState<BookingInput['surf_level'] | ''>(initial?.surf_level ?? '');
+  const [workingOn, setWorkingOn] = useState(initial?.working_on ?? '');
+  const [dietary, setDietary] = useState(initial?.dietary ?? '');
+  const [agreed, setAgreed] = useState(Boolean(initial?.agreed_terms_at));
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -210,7 +213,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true }: Boo
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
 
       <button type="submit" disabled={!complete || submitting} className="btn-primary btn-lg w-full">
-        {submitting ? 'Saving…' : 'Continue to payment'}
+        {submitting ? 'Saving…' : initial ? 'Save and continue' : 'Continue to payment'}
       </button>
       {onCancel && (
         <button type="button" onClick={onCancel} className="btn-secondary w-full">
