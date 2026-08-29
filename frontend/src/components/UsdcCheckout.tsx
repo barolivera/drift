@@ -54,6 +54,10 @@ export function UsdcCheckout({ booking, price, onStageChange, onSuccess }: UsdcC
   const [state, setState] = useState<State>({ kind: 'loading' });
   const units = usdcToUnits(price);
   const done = useRef(false);
+  // Latest `call` without making it an effect dependency (its identity changes per render).
+  const callRef = useRef(call);
+  callRef.current = call;
+  const startedFor = useRef<string | null>(null);
 
   useEffect(() => {
     onStageChange?.(state.kind === 'verifying' ? 'verifying' : 'pay');
@@ -69,11 +73,12 @@ export function UsdcCheckout({ booking, price, onStageChange, onSuccess }: UsdcC
   );
 
   useEffect(() => {
-    if (!signer) return;
+    if (!signer || startedFor.current === booking.id) return;
+    startedFor.current = booking.id; // one intent per booking, whatever re-renders happen
     let cancelled = false;
     (async () => {
       try {
-        const i = await call<UsdcPaymentIntent>('/api/payments', { method: 'POST', body: { booking_id: booking.id, method: 'usdc' } });
+        const i = await callRef.current<UsdcPaymentIntent>('/api/payments', { method: 'POST', body: { booking_id: booking.id, method: 'usdc' } });
         if (cancelled) return;
         setIntent(i);
         if (i.tx_hash) {
@@ -83,24 +88,41 @@ export function UsdcCheckout({ booking, price, onStageChange, onSuccess }: UsdcC
         const balance = await loadBalance((i.token || P2P.usdc) as `0x${string}`);
         if (!cancelled) setState({ kind: 'ready', balance });
       } catch (e) {
+        if (cancelled) return;
+        // The booking may have been confirmed meanwhile (another tab, a refresh after paying):
+        // reload it and let the page move on instead of showing "Booking is confirmed" as an error.
+        if (e instanceof ApiError && e.status === 409) {
+          try {
+            const fresh = await callRef.current<Booking>(`/api/bookings/${booking.id}`);
+            if (!cancelled && fresh.status === 'confirmed' && !done.current) {
+              done.current = true;
+              onSuccess(fresh);
+              return;
+            }
+          } catch {
+            /* fall through to the generic message */
+          }
+        }
         if (!cancelled) setState({ kind: 'error', message: e instanceof Error ? e.message : 'Could not start the payment', balance: null, retry: false });
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [signer, booking.id, call, loadBalance]);
+  }, [signer, booking.id, loadBalance, onSuccess]);
 
   // ── 3. poll the backend until it has verified the transfer ─────────
+  const txHash = state.kind === 'verifying' ? state.txHash : null;
+  const paymentId = intent?.payment_id ?? null;
   useEffect(() => {
-    if (state.kind !== 'verifying' || !intent) return;
+    if (!txHash || !paymentId) return;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const tick = async () => {
       try {
-        const r = await call<UsdcConfirmResponse>(`/api/payments/${intent.payment_id}/confirm`, {
+        const r = await callRef.current<UsdcConfirmResponse>(`/api/payments/${paymentId}/confirm`, {
           method: 'POST',
-          body: { tx_hash: state.txHash },
+          body: { tx_hash: txHash },
         });
         if (stopped) return;
         if (r.status === 'settled' && r.booking && !done.current) {
@@ -127,7 +149,7 @@ export function UsdcCheckout({ booking, price, onStageChange, onSuccess }: UsdcC
       stopped = true;
       if (timer) clearTimeout(timer);
     };
-  }, [state, intent, call, onSuccess]);
+  }, [txHash, paymentId, onSuccess]);
 
   // ── 2. send the transfer ───────────────────────────────────────────
   const pay = async () => {
