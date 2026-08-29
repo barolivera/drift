@@ -289,3 +289,29 @@ details > summary::-webkit-details-marker {
   color: var(--color-ink);
 }
 .reveal-word.reveal-coral::before { color: var(--color-coral); }
+
+/* ── Checkout: the payment widget inside Drift's own flow ──────────────
+   Drift draws the stepper, the waiting screens and the trip strip; the
+   widget keeps the parts we cannot rebuild (amount, QR, "I've sent"). It
+   styles itself inline, so hiding its chrome needs !important. */
+.p2p-host > div {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.p2p-host > div > div > div:first-child {
+  display: none !important; /* its own title bar */
+}
+.p2p-host .p2p-stepper {
+  display: none !important; /* its own Matching › Payment › Complete */
+}
+/* Pay step: the local-currency amount and the QR carry the screen */
+.checkout-pay .p2p-host h1 {
+  font-size: clamp(2rem, 5vw, 2.5rem) !important;
+  line-height: 1 !important;
+}
+.checkout-pay .p2p-host svg[aria-label='QR'] {
+  width: min(280px, 70vw) !important;
+  height: auto !important;
+}

@@ -9,7 +9,25 @@ import { ApiError, type Booking } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import { useCheckoutSigner } from '@/hooks/useCheckoutSigner';
 import { usePaymentStatus } from '@/hooks/usePaymentStatus';
+import { useWidgetStage } from '@/hooks/useWidgetStage';
 import { CURRENCIES, DRIFT_INTEGRATOR_ABI, P2P, routingConfigured, usdcToUnits, uuidToBytes32 } from '@/lib/p2p';
+
+/** The P2P widget re-skinned with Drift's tokens (see index.css): coral accent, paper/surface, Manrope, pill buttons. */
+const WIDGET_THEME = {
+  colors: {
+    bg: '#fbfcfd',
+    surfaceAlt: '#f4f3ef',
+    fg: '#16181c',
+    muted: '#6f727a',
+    border: '#e4e2dc',
+    accent: '#ec622a',
+    accentFg: '#fbfcfd',
+    success: '#224e35',
+    danger: '#b91c1c',
+  },
+  radii: { modal: 20, button: 35 },
+  font: 'Manrope, ui-sans-serif, system-ui, sans-serif',
+} as const;
 
 export interface PaymentCheckoutProps {
   tripId: string;
@@ -22,7 +40,22 @@ export interface PaymentCheckoutProps {
   /** Fired once the order reaches COMPLETED and the backend confirmed the booking. */
   onSuccess: (booking: Booking) => void;
   onCancel?: () => void;
+  /** Where the order is, so the host page can draw its own stepper and screens. */
+  onStageChange?: (stage: WidgetStage) => void;
+  /** Hide the widget (it stays mounted so the order keeps running). Ignored while an error is showing. */
+  quiet?: boolean;
 }
+
+/**
+ * The order's progress as the host sees it.
+ *   checkout   — pick a currency, "Pay now"
+ *   placing    — bookTrip transaction in flight (real mode only)
+ *   matching   — order placed, waiting for a merchant
+ *   pay        — merchant matched: amount, QR, "I've sent"
+ *   verifying  — user says they paid, merchant/back end confirming
+ *   done       — completed
+ */
+export type WidgetStage = 'checkout' | 'placing' | 'matching' | 'pay' | 'verifying' | 'done';
 
 type Phase = 'auth' | 'creating-booking' | 'ready' | 'confirming' | 'done' | 'error';
 
@@ -47,7 +80,16 @@ const publicClient = createPublicClient({ chain: baseSepolia, transport: http() 
  * runs is outdated). That is why the backend registration lives in
  * `onOrderPlaced`, which fires in both modes.
  */
-export function PaymentCheckout({ tripId, price, productName, booking: initialBooking, onSuccess, onCancel }: PaymentCheckoutProps) {
+export function PaymentCheckout({
+  tripId,
+  price,
+  productName,
+  booking: initialBooking,
+  onSuccess,
+  onCancel,
+  onStageChange,
+  quiet = false,
+}: PaymentCheckoutProps) {
   const { ready, authenticated, login } = usePrivy();
   const call = useApi();
   const walletSigner = useCheckoutSigner();
@@ -57,6 +99,22 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
   const [error, setError] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const successFired = useRef(false);
+
+  // ── stage, reported to the host ────────────────────────────────────
+  const [stage, setStage] = useState<WidgetStage>('checkout');
+  useEffect(() => {
+    onStageChange?.(stage);
+  }, [stage, onStageChange]);
+
+  // The widget never tells us when a merchant matched; read it off its DOM.
+  const [host, setHost] = useState<HTMLDivElement | null>(null);
+  const onStepIndex = useCallback((index: number) => {
+    if (index === 0) setStage((s) => (s === 'checkout' || s === 'placing' ? 'matching' : s));
+    else if (index === 1) setStage('pay');
+    else if (index === 2) setStage('verifying');
+    else if (index === 3) setStage('done');
+  }, []);
+  useWidgetStage(host, onStepIndex);
 
   // Real-time confirmation: once an order is placed, poll the backend every 2s.
   // The backend flips the payment to `settled` either from the P2P webhook
@@ -150,35 +208,41 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
       if (!walletSigner) throw new Error('Wallet not connected');
       if (ctx.currency.circleId === undefined) throw new Error('No merchant circle resolved for BRL');
 
-      // Relay identity: the merchant encrypts their PIX details to this key.
-      const store = createLocalStorageRelayStore();
-      let identity = await store.get();
-      if (!identity) {
-        identity = createRelayIdentity();
-        await store.set(identity);
+      setStage('placing');
+      try {
+        // Relay identity: the merchant encrypts their PIX details to this key.
+        const store = createLocalStorageRelayStore();
+        let identity = await store.get();
+        if (!identity) {
+          identity = createRelayIdentity();
+          await store.set(identity);
+        }
+
+        const data = encodeFunctionData({
+          abi: DRIFT_INTEGRATOR_ABI,
+          functionName: 'bookTrip',
+          args: [
+            uuidToBytes32(booking.id),
+            ctx.usdcAmount ?? usdcAmount,
+            stringToHex(ctx.currency.symbol, { size: 32 }),
+            ctx.currency.circleId,
+            identity.publicKey,
+            0n, // preferredPaymentChannelConfigId — let the Diamond choose
+            0n, // fiatAmountLimit — no slippage cap
+          ],
+        });
+
+        const { hash } = await walletSigner.sendTransaction({ to: P2P.integrator, data, gasLimit: 1_500_000 });
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        if (receipt.status === 'reverted') throw new Error('bookTrip transaction reverted');
+
+        const orderId = parseOrderIdFromReceipt(receipt as any);
+        if (!orderId) throw new Error('orderId missing from receipt');
+        return { orderId, txHash: hash };
+      } catch (e) {
+        setStage('checkout');
+        throw e;
       }
-
-      const data = encodeFunctionData({
-        abi: DRIFT_INTEGRATOR_ABI,
-        functionName: 'bookTrip',
-        args: [
-          uuidToBytes32(booking.id),
-          ctx.usdcAmount ?? usdcAmount,
-          stringToHex(ctx.currency.symbol, { size: 32 }),
-          ctx.currency.circleId,
-          identity.publicKey,
-          0n, // preferredPaymentChannelConfigId — let the Diamond choose
-          0n, // fiatAmountLimit — no slippage cap
-        ],
-      });
-
-      const { hash } = await walletSigner.sendTransaction({ to: P2P.integrator, data, gasLimit: 1_500_000 });
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      if (receipt.status === 'reverted') throw new Error('bookTrip transaction reverted');
-
-      const orderId = parseOrderIdFromReceipt(receipt as any);
-      if (!orderId) throw new Error('orderId missing from receipt');
-      return { orderId, txHash: hash };
     },
     [booking, walletSigner, usdcAmount],
   );
@@ -187,6 +251,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
   const handleOrderPlaced = useCallback(
     async (orderId: string, txHash: string) => {
       console.info('[checkout] order placed', orderId, txHash);
+      setStage('matching');
       if (!authenticated || !booking) return;
       try {
         await call('/api/payments/p2pkit', {
@@ -212,6 +277,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
     if (!payment.confirmed || successFired.current || !booking) return;
     successFired.current = true;
     setPhase('done');
+    setStage('done');
     const confirmedBooking = { ...booking, status: 'confirmed' as const };
     setBooking(confirmedBooking);
     onSuccess(confirmedBooking);
@@ -236,11 +302,13 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
           });
           setBooking(confirmed);
           setPhase('done');
+          setStage('done');
           onSuccess(confirmed);
         } else {
           // demo without login
           const fake = { ...(booking as Booking), status: 'confirmed' as const };
           setPhase('done');
+          setStage('done');
           onSuccess(fake);
         }
       } catch (e) {
@@ -297,22 +365,22 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
     return <ErrorBox message="Checkout is not configured: set VITE_P2P_SUBGRAPH_URL or VITE_P2P_BRL_CIRCLE_ID." />;
   }
 
+  // While the host shows its own waiting screen the widget stays mounted but
+  // hidden — unless something went wrong, in which case "Try again" must be reachable.
+  const hidden = quiet && !error;
+
   return (
-    <div className="space-y-3">
+    <div className={hidden ? 'hidden' : 'space-y-3'}>
       {P2P.demo && (
         <p className="rounded-xl bg-mustard-soft px-3 py-2 text-xs text-ink/80">
           Demo mode — no transaction is sent and the payment flow is simulated.
         </p>
       )}
       {error && <ErrorBox message={error} onRetry={() => setError(null)} />}
-      {orderId && !payment.confirmed && !payment.failed && (
-        <Status>
-          Waiting for payment confirmation…
-          {payment.status && <span className="label ml-1 text-mute">{payment.status}</span>}
-        </Status>
-      )}
+      <div ref={setHost} className="p2p-host">
       <Checkout
         mode="inline"
+        theme={WIDGET_THEME}
         demo={P2P.demo}
         signer={signer}
         placeOrder={placeOrder}
@@ -327,12 +395,14 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
         onOrderPlaced={handleOrderPlaced}
         onComplete={handleComplete}
         onCancel={() => {
+          setStage('checkout');
           setError('Order cancelled. Your seat is released — you can try again.');
           onCancel?.();
         }}
         onError={handleError}
         onClose={onCancel}
       />
+      </div>
     </div>
   );
 }
@@ -340,7 +410,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
 function Status({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 rounded-2xl bg-paper p-4 text-sm text-mute shadow-soft">
-      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-lilac border-t-ink" />
+      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-line border-t-coral" />
       {children}
     </div>
   );

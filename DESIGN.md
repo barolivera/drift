@@ -76,6 +76,16 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
 - **"Pick your water" section**: title only, no eyebrow/date, no
   subtitle paragraph — the boarding pass cards carry all the info.
 
+- **Checkout** (`pages/Book.tsx`): one stepper, four steps — Details ›
+  Matching › Pay › Done — and a different screen per step. Details is two
+  columns (form or saved details + "how you pay" left, order summary right).
+  Matching and Verifying are one centred column with a coral spinner and one
+  line of copy. Pay is one centred column: a one-line trip strip, then the
+  local-currency amount, the QR and "I've sent" — nothing else. Done is the
+  forest check disc, "Seat confirmed" and the next step (Telegram / My
+  bookings). The payment widget keeps only what we cannot rebuild; its own
+  title bar and stepper are hidden (`.p2p-host` in index.css).
+
 ## Imagery
 
 - Hero photo: black & white / desaturated (`grayscale` on the `<img>`).
