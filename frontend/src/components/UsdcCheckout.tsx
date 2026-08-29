@@ -34,6 +34,7 @@ const REJECT_MESSAGES: Record<string, string> = {
   wrong_sender: "The transfer didn't come from this wallet.",
   no_transfer: 'That transaction contains no USDC transfer.',
   reverted: 'The transaction reverted on-chain.',
+  not_found: 'The transaction never reached the network. Try again.',
 };
 
 /**

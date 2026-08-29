@@ -15,7 +15,8 @@ import { Contract, Interface, JsonRpcProvider, getAddress, isAddress } from 'eth
 import { env } from '../config/env.js';
 
 export type UsdcVerifyCode =
-  | 'not_mined' // unknown to the node yet, or still pending → retry
+  | 'not_found' // the node has never seen this hash → retry briefly, then give up
+  | 'not_mined' // in the mempool, not mined yet → retry
   | 'reverted'
   | 'no_transfer' // mined, but no Transfer of the configured token in it
   | 'wrong_recipient'
@@ -89,11 +90,8 @@ export async function verifyUsdcTransfer(opts: {
   const receipt = await rpc.getTransactionReceipt(opts.txHash);
   if (!receipt) {
     const pending = await rpc.getTransaction(opts.txHash);
-    throw new UsdcVerifyError(
-      'not_mined',
-      pending ? 'Transaction is pending — not mined yet' : 'Transaction not found on the network yet',
-      true,
-    );
+    if (pending) throw new UsdcVerifyError('not_mined', 'Transaction is pending — not mined yet', true);
+    throw new UsdcVerifyError('not_found', 'Transaction not found on the network', true);
   }
   if (receipt.status !== 1) throw new UsdcVerifyError('reverted', 'Transaction reverted');
 

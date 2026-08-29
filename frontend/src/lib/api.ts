@@ -181,7 +181,7 @@ export interface UsdcPaymentIntent {
 export interface UsdcConfirmResponse {
   ok: boolean;
   status: 'settled' | 'pending' | 'rejected' | 'error';
-  code?: 'not_mined' | 'reverted' | 'no_transfer' | 'wrong_recipient' | 'wrong_amount' | 'wrong_sender';
+  code?: 'not_found' | 'not_mined' | 'reverted' | 'no_transfer' | 'wrong_recipient' | 'wrong_amount' | 'wrong_sender';
   error?: string;
   booking?: Booking;
 }

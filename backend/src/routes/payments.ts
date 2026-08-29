@@ -11,6 +11,8 @@ export const paymentsRouter = Router();
 
 /** Direct USDC payments are verified against BASE_SEPOLIA_RPC (see lib/usdc.ts). */
 const USDC_CHAIN = 'base-sepolia';
+/** How long an unknown tx hash keeps an intent in 'processing' before it is reopened. */
+const UNKNOWN_TX_GRACE_MS = 5 * 60 * 1000;
 
 /** Quote a trip price in BRL via p2pkit. */
 paymentsRouter.get('/quote', requireAuth, async (req, res) => {
@@ -230,9 +232,10 @@ paymentsRouter.post('/:id/confirm', requireAuth, async (req, res) => {
     status: string;
     amount_usdc: string;
     tx_hash: string | null;
+    updated_at: string;
     wallet_address: string | null;
   }>(
-    `SELECT p.id, p.booking_id, p.status, p.amount_usdc, p.tx_hash, u.wallet_address
+    `SELECT p.id, p.booking_id, p.status, p.amount_usdc, p.tx_hash, p.updated_at, u.wallet_address
      FROM payments p
      JOIN bookings b ON b.id = p.booking_id
      JOIN users u ON u.id = b.user_id
@@ -280,8 +283,18 @@ paymentsRouter.post('/:id/confirm', requireAuth, async (req, res) => {
   } catch (err) {
     if (err instanceof UsdcVerifyError) {
       if (err.retryable) {
+        // A hash the network has never seen gets a grace period (RPC lag), then the
+        // intent is reopened so the guest can pay again instead of polling forever.
+        const sameHash = payment.tx_hash?.toLowerCase() === txHash;
+        const ageMs = Date.now() - new Date(payment.updated_at).getTime();
+        if (err.code === 'not_found' && sameHash && ageMs > UNKNOWN_TX_GRACE_MS) {
+          await query(`UPDATE payments SET tx_hash = NULL, status = 'pending', updated_at = now() WHERE id = $1`, [payment.id]);
+          return res.status(422).json({ ok: false, status: 'rejected', code: err.code, error: 'The transaction never reached the network' });
+        }
         // Remember the hash so a refresh can keep polling; the booking stays pending.
-        await query(`UPDATE payments SET tx_hash = $2, status = 'processing', updated_at = now() WHERE id = $1`, [payment.id, txHash]);
+        if (!sameHash) {
+          await query(`UPDATE payments SET tx_hash = $2, status = 'processing', updated_at = now() WHERE id = $1`, [payment.id, txHash]);
+        }
         return res.status(202).json({ ok: false, status: 'pending', code: err.code, error: err.message });
       }
       console.warn(`usdc payment ${payment.id} rejected (${err.code}): ${err.message} [${txHash}]`);
