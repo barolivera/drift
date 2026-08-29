@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { api, type Trip } from '@/lib/api';
-import { photos, src, srcSet, type Photo } from '@/lib/photos';
+import { photos, src, srcSet } from '@/lib/photos';
 import { BlocksMark, LaptopMark, PalmMark, Patch, WaveMark } from '@/components/Marks';
 import { Inclusions } from '@/components/Inclusions';
 import { HOME_INCLUSIONS } from '@/lib/inclusions';
@@ -123,9 +123,6 @@ function Editions({ trips }: { trips: Trip[] | null }) {
           ))}
         </div>
       )}
-      <p className="label mt-3 text-right text-mute">
-        Photos: {photos.itamambuca.author} · {photos.praiaDoRosa.author} (Unsplash)
-      </p>
     </section>
   );
 }
@@ -170,7 +167,7 @@ function WhoItsFor() {
 /* ───────────── 8. FOOTER CTA — dark band, photo, big title ───────────── */
 function FooterCta() {
   return (
-    <section className={`${content} pb-6`}>
+    <section className={`${content} pb-6 pt-20 md:pt-24`}>
       <div className="relative isolate overflow-hidden rounded-[28px] bg-ink text-paper">
         <img
           src={src(photos.hero, 1600)}
@@ -195,23 +192,7 @@ function FooterCta() {
             </a>
           </div>
         </div>
-        <Credit photo={photos.hero} className="absolute bottom-3 right-4 text-paper/50" />
       </div>
     </section>
-  );
-}
-
-/* ───────────── helpers ───────────── */
-function Credit({ photo, className = '' }: { photo: Photo; className?: string }) {
-  return (
-    <a
-      href={photo.page}
-      target="_blank"
-      rel="noreferrer"
-      className={`label normal-case hover:underline ${className}`}
-      title="Placeholder photo — replace with Drift's own"
-    >
-      Photo: {photo.author} / Unsplash
-    </a>
   );
 }

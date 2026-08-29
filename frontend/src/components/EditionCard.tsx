@@ -29,7 +29,6 @@ export function EditionCard({ trip }: { trip: Trip }) {
           alt={stub.photo.alt}
           className="aspect-[4/3] w-full object-cover transition duration-700 group-hover:scale-[1.02]"
         />
-        <span className="label absolute bottom-2 right-3 normal-case text-paper/70">Photo: {stub.photo.author} / Unsplash</span>
       </div>
 
       {/* perforation */}

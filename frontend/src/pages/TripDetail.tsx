@@ -75,7 +75,6 @@ export function TripDetail() {
             className="aspect-[4/3] w-full object-cover sm:aspect-[16/9] md:aspect-[21/9]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/5 to-transparent" />
-          <Credit photo={spot.hero} className="absolute bottom-3 right-4 text-paper/70" />
         </div>
         <div className="card-paper relative -mt-14 max-w-3xl p-6 sm:p-10 md:-mt-24 md:ml-10">
           <div className="flex flex-wrap gap-2">
@@ -124,7 +123,6 @@ export function TripDetail() {
               loading="lazy"
               className="aspect-[4/5] w-full rounded-2xl object-cover md:aspect-[4/4.6]"
             />
-            <Credit photo={spot.house} className="absolute bottom-4 right-5 text-paper/70" />
           </div>
         </div>
       </section>
@@ -199,13 +197,5 @@ export function TripDetail() {
       {/* f. FAQ — shared band; "How does paying work?" lives here */}
       <FaqSection />
     </article>
-  );
-}
-
-function Credit({ photo, className = '' }: { photo: Photo; className?: string }) {
-  return (
-    <a href={photo.page} target="_blank" rel="noreferrer" className={`label normal-case hover:underline ${className}`} title="Placeholder photo — replace with Drift's own">
-      Photo: {photo.author} / Unsplash
-    </a>
   );
 }
