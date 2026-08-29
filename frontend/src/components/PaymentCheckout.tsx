@@ -10,13 +10,14 @@ import { useApi } from '@/hooks/useApi';
 import { useCheckoutSigner } from '@/hooks/useCheckoutSigner';
 import { usePaymentStatus } from '@/hooks/usePaymentStatus';
 import { useWidgetStage } from '@/hooks/useWidgetStage';
+import { useWidgetCopy } from '@/hooks/useWidgetCopy';
 import { CURRENCIES, DRIFT_INTEGRATOR_ABI, P2P, routingConfigured, usdcToUnits, uuidToBytes32 } from '@/lib/p2p';
 
-/** The P2P widget re-skinned with Drift's tokens (see index.css): coral accent, paper/surface, Manrope, pill buttons. */
+/** The P2P widget re-skinned with Drift's tokens (see index.css): coral accent, white surfaces, Manrope, pill buttons. */
 const WIDGET_THEME = {
   colors: {
-    bg: '#fbfcfd',
-    surfaceAlt: '#f4f3ef',
+    bg: '#ffffff',
+    surfaceAlt: '#f6f7f8',
     fg: '#16181c',
     muted: '#6f727a',
     border: '#e4e2dc',
@@ -115,6 +116,7 @@ export function PaymentCheckout({
     else if (index === 3) setStage('done');
   }, []);
   useWidgetStage(host, onStepIndex);
+  useWidgetCopy(host);
 
   // Real-time confirmation: once an order is placed, poll the backend every 2s.
   // The backend flips the payment to `settled` either from the P2P webhook

@@ -181,6 +181,8 @@ details > summary::-webkit-details-marker {
 /* Cards — surface, no border, soft shadow. */
 @utility card { border-radius: 20px; background-color: var(--color-surface); box-shadow: var(--shadow-soft); }
 @utility card-paper { border-radius: 20px; background-color: var(--color-paper); box-shadow: var(--shadow-soft); }
+/* Checkout surfaces — white, hairline border, no tint, no shadow. */
+@utility card-line { border-radius: 20px; background-color: #ffffff; border: 1px solid var(--color-line); }
 
 /* Form fields */
 @utility field {

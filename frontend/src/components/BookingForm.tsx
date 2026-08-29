@@ -134,7 +134,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true, initi
         <input type="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
       </Field>
 
-      <Field label="Telegram" helper="Trip comms happen on Telegram — this is how we reach you" error={fieldErrors.telegram}>
+      <Field label="Telegram" helper="How we reach you before the trip" error={fieldErrors.telegram}>
         <div className="flex items-center rounded-xl border border-line bg-paper transition-colors focus-within:border-ink">
           <span className="label pl-3.5 text-mute">@</span>
           <input
@@ -161,7 +161,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true, initi
         </select>
       </Field>
 
-      <Field label="Surf level" helper="All levels welcome — this is just so we can split the sessions" error={fieldErrors.surf_level}>
+      <Field label="Surf level" error={fieldErrors.surf_level}>
         <div className="flex flex-wrap gap-2">
           {SURF_LEVELS.map((lvl) => {
             const on = surfLevel === lvl.value;
@@ -187,7 +187,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true, initi
         </div>
       </Field>
 
-      <Field label="What are you working on?" helper="One line. We introduce residents to each other before you land" error={fieldErrors.working_on}>
+      <Field label="What are you working on?" helper="One line" error={fieldErrors.working_on}>
         <textarea className={`${inputCls} resize-none`} rows={2} maxLength={280} value={workingOn} onChange={(e) => setWorkingOn(e.target.value)} required />
       </Field>
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -25,6 +25,9 @@ const EDITION_PHOTO: Record<string, Photo> = {
 const TELEGRAM_URL: string | undefined =
   import.meta.env.VITE_TELEGRAM_INVITE_URL || undefined;
 
+const CONTRACT_SHORT = "0x7e1b…bb3F";
+const NETWORK = "Base Sepolia";
+
 /**
  * One flow, four steps. `placing`/`matching` share the Matching step and
  * `pay`/`verifying` share the Pay step, but each gets its own screen.
@@ -42,13 +45,16 @@ const STEP_OF: Record<Stage, number> = {
 /**
  * Booking checkout — /trips/:tripId/book/:bookingId?
  *
- *   1 Details   two columns: form (or saved details + "how you pay") left,
- *               order summary right.
+ *   1 Details   two columns: form (or saved details + payment) left, order
+ *               summary right.
  *   2 Matching  one centred column, a waiting screen. The widget is mounted
  *               but hidden — it keeps the order alive.
  *   3 Pay       one centred column: trip strip, then the widget alone
  *               (amount, QR, "I've sent"). Verifying shows a waiting screen.
- *   4 Done      one centred column: seat confirmed + next steps.
+ *   4 Done      one centred column: seat confirmed, next step, proof.
+ *
+ * Copy rule: each screen says what to do now and what is being paid for.
+ * How the payment works is explained once, in <PaymentInfo>.
  *
  *   no bookingId  → registration form; on save we replace the URL with the
  *                   new booking id, so a refresh resumes at the details/review.
@@ -123,7 +129,7 @@ export function Book() {
           ? "verifying" // order complete, booking confirmation in flight
           : widgetStage
         : "details";
-  const review = stage === "details" && pending && !editing; // saved details + "how you pay"
+  const review = stage === "details" && pending && !editing; // saved details + payment
   const twoCol = stage === "details";
   const waiting =
     stage === "placing" || stage === "matching" || stage === "verifying";
@@ -174,11 +180,10 @@ export function Book() {
               {trip && !ready && <Quiet>Loading your session…</Quiet>}
 
               {trip && ready && !authenticated && (
-                <section className="card p-6 sm:p-8">
+                <section className="card-line p-6 sm:p-8">
                   <h2 className={sectionTitle}>Log in to reserve your seat</h2>
                   <p className="mt-2 text-sm text-mute">
-                    Email or wallet — it takes a few seconds and holds nothing
-                    until you pay.
+                    Email or wallet. Nothing is held until you pay.
                   </p>
                   <button onClick={login} className="btn-primary mt-5">
                     Log in
@@ -217,9 +222,7 @@ export function Book() {
               {ok && stage === "details" && !review && (
                 <section>
                   <h2 className={sectionTitle}>Your details</h2>
-                  <p className="mt-1 text-sm text-mute">
-                    Two minutes. Then you pay and the seat is yours.
-                  </p>
+                  <p className="mt-1 text-sm text-mute">Takes 2 minutes.</p>
                   <div className="mt-6">
                     <BookingForm
                       trip={trip!}
@@ -250,15 +253,13 @@ export function Book() {
               {ok && stage === "matching" && (
                 <WaitScreen
                   title="Finding your merchant"
-                  body="Someone verified will take your payment and settle USDC to Drift. Usually 2–3 minutes."
-                  hint="Keep this tab open"
+                  body="Usually 2–3 minutes. Keep this tab open."
                 />
               )}
               {ok && stage === "verifying" && (
                 <WaitScreen
                   title="Verifying your payment"
-                  body="Confirming receipt. Usually under a minute."
-                  hint="Keep this tab open"
+                  body="Usually under a minute."
                 />
               )}
 
@@ -276,16 +277,8 @@ export function Book() {
                         : ""
                   }
                 >
-                  {review && (
-                    <>
-                      <h2 className={sectionTitle}>How you pay</h2>
-                      <p className="mt-1 text-sm text-mute">
-                        Pick your currency. A verified merchant converts it and
-                        the USDC settles to Drift's contract on Base.
-                      </p>
-                    </>
-                  )}
-                  <div className={review ? "mt-6" : ""}>
+                  {review && <h2 className={sectionTitle}>Payment</h2>}
+                  <div className={review ? "mt-5" : ""}>
                     <PaymentCheckout
                       tripId={trip.id}
                       price={trip.price_usdc}
@@ -300,16 +293,13 @@ export function Book() {
               )}
 
               {ok && review && (
-                <div className="mt-10 flex items-center justify-between border-t border-line pt-6">
+                <div className="mt-10 border-t border-line pt-6">
                   <button
                     onClick={back}
                     className="text-sm text-mute hover:text-ink"
                   >
                     ‹ Back to the trip
                   </button>
-                  <span className="label text-mute">
-                    Seat held while you pay
-                  </span>
                 </div>
               )}
 
@@ -324,7 +314,7 @@ export function Book() {
                 booking &&
                 booking.status !== "pending" &&
                 booking.status !== "confirmed" && (
-                  <section className="card p-6 sm:p-8">
+                  <section className="card-line p-6 sm:p-8">
                     <span className="chip chip-ghost">{booking.status}</span>
                     <p className="mt-4 text-2xl font-extrabold tracking-tight">
                       This booking is {booking.status}.
@@ -350,14 +340,6 @@ export function Book() {
                 <a href="/terms" className="label text-mute hover:text-ink">
                   Terms
                 </a>
-                <a
-                  href={CONTRACT_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="label text-mute hover:text-ink"
-                >
-                  Contract 0x7e1b…bb3F ↗
-                </a>
               </footer>
             )}
           </div>
@@ -365,7 +347,7 @@ export function Book() {
 
         {/* ── right: order summary (details only) ─────────────────────── */}
         {twoCol && (
-          <aside className="hidden bg-surface lg:block">
+          <aside className="hidden bg-paper lg:block lg:border-l lg:border-line">
             <div className="sticky top-0 mr-auto max-w-[520px] px-12 py-10 xl:px-16">
               {trip ? (
                 <Summary trip={trip} booking={booking} />
@@ -435,15 +417,7 @@ function Steps({ current, centered }: { current: number; centered: boolean }) {
 }
 
 /** Spinner, a title and one line — nothing else on the screen. */
-function WaitScreen({
-  title,
-  body,
-  hint,
-}: {
-  title: string;
-  body: string;
-  hint?: string;
-}) {
+function WaitScreen({ title, body }: { title: string; body: string }) {
   return (
     <div className="py-16 text-center" role="status" aria-live="polite">
       <span
@@ -454,7 +428,6 @@ function WaitScreen({
       <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-mute">
         {body}
       </p>
-      {hint && <p className="label mt-8 text-mute">{hint}</p>}
     </div>
   );
 }
@@ -475,7 +448,7 @@ function PayStrip({ trip }: { trip: Trip }) {
   );
 }
 
-/** Seat confirmed + the next step. */
+/** Seat confirmed, the next step, and the proof of the transaction. */
 function Done({ trip, booking }: { trip: Trip; booking: Booking }) {
   const [place] = trip.title.split(" — ");
   return (
@@ -497,11 +470,14 @@ function Done({ trip, booking }: { trip: Trip; booking: Booking }) {
       <p className="display mt-8 text-[clamp(2.25rem,4vw,3.25rem)]">
         Seat confirmed
       </p>
-      <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-ink/80">
-        {place}, {formatDateRange(trip.starts_on, trip.ends_on)}. We'll reach
-        you on Telegram{booking.telegram ? ` @${booking.telegram}` : ""} before
-        you land.
+      <p className="mt-4 text-base text-ink/80">
+        {place} · {formatDateRange(trip.starts_on, trip.ends_on)}
       </p>
+      {booking.telegram && (
+        <p className="mt-1 text-base text-mute">
+          We'll reach you on Telegram @{booking.telegram}.
+        </p>
+      )}
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
         {TELEGRAM_URL && (
           <a
@@ -520,12 +496,24 @@ function Done({ trip, booking }: { trip: Trip; booking: Booking }) {
           See my booking
         </Link>
       </div>
-      <p className="label mt-10 normal-case text-mute">Booking {booking.id}</p>
+      {/* proof of the transaction */}
+      <div className="mt-12 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-line pt-6">
+        <span className="label normal-case text-mute">Booking {booking.id}</span>
+        <a
+          href={CONTRACT_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="label text-mute hover:text-ink"
+        >
+          Contract {CONTRACT_SHORT} ↗
+        </a>
+        <span className="chip chip-ghost">{NETWORK}</span>
+      </div>
     </div>
   );
 }
 
-/** The saved registration, with a Change link — shown above "how you pay". */
+/** The saved registration, with a Change link — shown above the payment. */
 function DetailsBox({
   booking,
   onChange,
@@ -544,7 +532,7 @@ function DetailsBox({
     ["Surf level", level],
   ];
   return (
-    <section className="overflow-hidden rounded-[15px] border border-line">
+    <section className="overflow-hidden rounded-[15px] border border-line bg-white">
       {rows.map(([k, v], i) => (
         <div
           key={k}
@@ -566,7 +554,66 @@ function DetailsBox({
   );
 }
 
-/** Order summary: what you're buying, what it costs, how it's paid. */
+/**
+ * The one place in the flow that explains how the payment works.
+ * A link that opens a small dialog, so it never sits in the way.
+ */
+function PaymentInfo() {
+  const ref = useRef<HTMLDialogElement>(null);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => ref.current?.showModal()}
+        className="text-sm text-mute underline underline-offset-4 hover:text-ink"
+      >
+        How payment works
+      </button>
+      <dialog
+        ref={ref}
+        onClick={(e) => e.target === ref.current && ref.current.close()}
+        className="card-line m-auto w-[calc(100%-3rem)] max-w-md p-0 text-ink backdrop:bg-ink/40"
+      >
+        <div className="p-6 sm:p-8">
+          <p className={sectionTitle}>How payment works</p>
+          <ol className="mt-4 space-y-3 text-sm leading-relaxed text-ink/80">
+            <li>
+              <span className="font-semibold text-ink">1 · You pay in your currency.</span>{" "}
+              PIX today; more as merchant circles open.
+            </li>
+            <li>
+              <span className="font-semibold text-ink">2 · A verified merchant converts it</span>{" "}
+              to USDC and settles on {NETWORK}, straight to Drift's contract.
+            </li>
+            <li>
+              <span className="font-semibold text-ink">3 · Your seat is confirmed</span>{" "}
+              the moment the order completes.
+            </li>
+          </ol>
+          <div className="mt-6 flex items-center justify-between">
+            <a
+              href={CONTRACT_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="label text-mute hover:text-ink"
+            >
+              Contract {CONTRACT_SHORT} ↗
+            </a>
+            <button
+              type="button"
+              onClick={() => ref.current?.close()}
+              className="btn-secondary btn-sm"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
+/** Order summary: what you're buying and what it costs. */
 function Summary({
   trip,
   booking,
@@ -581,7 +628,7 @@ function Summary({
   const [place, edition] = trip.title.split(" — ");
   const paid = booking?.status === "confirmed";
   return (
-    <div className={compact ? "card p-5" : ""}>
+    <div className={compact ? "card-line p-5" : ""}>
       <div className="flex items-start gap-4">
         <div className="relative shrink-0">
           <img
@@ -642,16 +689,8 @@ function Summary({
               {formatUsdc(trip.price_usdc)}
             </span>
           </div>
-          <p className="mt-6 text-sm leading-relaxed text-mute">
-            You pay in your own currency (PIX, and more as P2P.me opens merchant
-            circles). A verified merchant converts it and the USDC settles on
-            Base, straight to Drift's contract. Your seat is confirmed the
-            moment the order completes.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <span className="chip chip-forest">0x7e1b…bb3F</span>
-            <span className="chip chip-ghost">Base Sepolia</span>
-            {paid && <span className="chip chip-forest">Confirmed</span>}
+          <div className="mt-6">
+            <PaymentInfo />
           </div>
         </>
       )}
