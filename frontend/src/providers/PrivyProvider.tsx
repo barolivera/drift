@@ -19,7 +19,9 @@ export function AppPrivyProvider({ children }: { children: ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        loginMethods: ['email', 'wallet', 'google'],
+        // Login methods come from the Privy dashboard (Login methods → Email / Wallets / Socials),
+        // so the modal only offers what the app actually allows. Hardcoding the list here shows
+        // buttons the server then rejects ("Login with Google not allowed").
         appearance: {
           theme: 'light',
           accentColor: '#1e9bc0',
