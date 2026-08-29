@@ -3,7 +3,7 @@ import { Patch } from '@/components/Marks';
 
 /**
  * Two-column grid of inclusions: line icon, uppercase label, one line.
- * `plain` (Home): freestanding icon + display label, Bai Bai-style.
+ * `plain` (Home): freestanding icon + display label.
  * `patch` (edition page): shield-framed icon + small label.
  * These are things you get, not a schedule — no hours anywhere.
  */

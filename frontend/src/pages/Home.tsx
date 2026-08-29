@@ -6,15 +6,12 @@ import { BlocksMark, LaptopMark, PalmMark, Patch, WaveMark } from '@/components/
 import { Inclusions } from '@/components/Inclusions';
 import { HOME_INCLUSIONS } from '@/lib/inclusions';
 import { EditionCard } from '@/components/EditionCard';
-import { Faq } from '@/components/Faq';
+import { FaqSection } from '@/components/FaqSection';
+import { ui } from '@/lib/ui';
 import { ScrollReveal } from '@/components/ScrollReveal';
 
 
-/* Layout primitives — one paper page, surface cards float on it. */
-const container = 'w-full px-6 md:px-10 xl:px-12'; // hero: wide, small inset
-const content = 'mx-auto w-full max-w-6xl px-6 md:px-8'; // body: narrower, centred, editorial (Lunte)
-const section = 'py-20 md:py-24';
-const h2 = 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink';
+const { hero: container, content, section, h2 } = ui;
 
 export function Home() {
   const [trips, setTrips] = useState<Trip[] | null>(null);
@@ -133,7 +130,7 @@ function Editions({ trips }: { trips: Trip[] | null }) {
   );
 }
 
-/* ───────────── 5. WHO IT'S FOR — three tall surface cards, big line icon, title + one line (ElevenLabs "Safety, built in") ───────────── */
+/* ───────────── 5. WHO IT'S FOR — three tall surface cards, big line icon, title + one line ───────────── */
 function WhoItsFor() {
   const profiles = [
     {
@@ -170,22 +167,10 @@ function WhoItsFor() {
   );
 }
 
-/* ───────────── 6. FAQ — one card; "How does paying work?" lives here now ───────────── */
-function FaqSection() {
-  return (
-    <section id="faq" className="scroll-mt-24 bg-surface py-20 md:py-24">
-      <div className={content}>
-        <p className="label text-center text-sm text-mute">Common questions</p>
-        <Faq className="mt-10" />
-      </div>
-    </section>
-  );
-}
-
-/* ───────────── 8. FOOTER CTA — dark band, photo, big title (Le Camp "Prêt à gravir les sommets") ───────────── */
+/* ───────────── 8. FOOTER CTA — dark band, photo, big title ───────────── */
 function FooterCta() {
   return (
-    <section className={`${content} pb-6 pt-20 md:pt-24`}>
+    <section className={`${content} pb-6`}>
       <div className="relative isolate overflow-hidden rounded-[28px] bg-ink text-paper">
         <img
           src={src(photos.hero, 1600)}

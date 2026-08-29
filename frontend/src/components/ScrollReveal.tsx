@@ -11,7 +11,7 @@ export interface RevealSegment {
 }
 
 /**
- * Scroll-linked text fill (Lunte-style): the copy sits in a faint tint and
+ * Scroll-linked text fill: the copy sits in a faint tint and
  * fills word by word — with a soft edge — as the block travels up through
  * the viewport. One continuous progress across all segments, so a block
  * with several paragraphs reads as a single animation. No library;

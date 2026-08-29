@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
 import { useApi } from '@/hooks/useApi';
 import type { Booking, Me } from '@/lib/api';
+import { ui } from '@/lib/ui';
 
 const STATUS_CHIP: Record<string, string> = {
   confirmed: 'chip chip-forest',
@@ -30,8 +31,8 @@ export function Profile() {
   if (!ready) return <p className="text-mute">Loading…</p>;
   if (!authenticated) {
     return (
-      <div className="card mx-auto max-w-md p-8 text-center">
-        <p className="text-mute">Log in to see your bookings.</p>
+      <div className="card mx-auto max-w-md p-8 text-center sm:p-10">
+        <p className={ui.muted}>Log in to see your bookings.</p>
         <button onClick={login} className="btn-primary mt-5">
           Log in
         </button>
@@ -40,15 +41,20 @@ export function Profile() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <section className="card p-6 sm:p-8">
-        <p className="label text-mute">Account</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight">{me?.display_name ?? me?.email ?? 'Nomad'}</h1>
-        <p className="label mt-3 text-mute">{me?.wallet_address ?? 'no wallet linked'}</p>
+    <div className="space-y-12">
+      <section>
+        <h1 className={ui.h1}>My bookings</h1>
+        <div className="card mt-8 flex flex-col gap-2 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div>
+            <p className={ui.eyebrow}>Account</p>
+            <p className="mt-1.5 text-lg font-semibold text-ink">{me?.display_name ?? me?.email ?? 'Nomad'}</p>
+          </div>
+          <p className="label text-mute">{me?.wallet_address ?? 'no wallet linked'}</p>
+        </div>
       </section>
       <section>
         <div className="mb-4 flex items-end justify-between">
-          <h2 className="text-xl font-bold tracking-tight">My bookings</h2>
+          <h2 className={ui.h3}>Reservations</h2>
           <Link to="/trips" className="btn-secondary btn-sm">
             Browse trips
           </Link>

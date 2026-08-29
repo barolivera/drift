@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { FAQ_ITEMS, type FaqItem } from '@/lib/faq';
 
 /**
- * Accordion, Lunte-style: every question is its own paper card, stacked with a
+ * Accordion: every question is its own paper card, stacked with a
  * small gap; a thin +/− on the left, the question set large and regular, and
  * the answer indented under it in grey. An item whose id matches the URL hash
  * opens by default.

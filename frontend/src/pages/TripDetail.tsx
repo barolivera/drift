@@ -4,13 +4,12 @@ import { usePrivy } from '@privy-io/react-auth';
 import { api, formatDateRange, nights, hasFoundingPrice, type Trip } from '@/lib/api';
 import { PriceTag } from '@/components/PriceTag';
 import { Inclusions } from '@/components/Inclusions';
-import { Faq } from '@/components/Faq';
+import { FaqSection } from '@/components/FaqSection';
+import { ui } from '@/lib/ui';
 import { inclusionsFrom } from '@/lib/inclusions';
 import { photos, src, srcSet, type Photo } from '@/lib/photos';
 
-const container = 'w-full px-6 md:px-10 xl:px-12';
-const eyebrow = 'label text-mute';
-const h2 = 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink';
+const { content: container, eyebrow, h2 } = ui;
 
 /* Per-spot copy that isn't in the DB yet: the place photo and how to get there. */
 const SPOT: Record<string, { hero: Photo; house: Photo; airport: string; transfer: string }> = {
@@ -65,35 +64,33 @@ export function TripDetail() {
 
   return (
     <article className="bg-paper text-ink">
-      {/* a. HERO — full-width photo, title, short description */}
-      <section className="relative isolate">
-        <div className="relative h-[60svh] min-h-[380px] w-full overflow-hidden">
+      {/* a. HERO — photo framed inside the content column, title card overlapping it */}
+      <section className={`${container} pt-6 md:pt-10`}>
+        <div className="relative overflow-hidden rounded-[28px] bg-surface">
           <img
             src={src(spot.hero, 1800)}
             srcSet={srcSet(spot.hero)}
-            sizes="100vw"
+            sizes="(min-width: 1152px) 1152px, 100vw"
             alt={spot.hero.alt}
-            className="h-full w-full object-cover"
+            className="aspect-[4/3] w-full object-cover sm:aspect-[16/9] md:aspect-[21/9]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/5 to-transparent" />
           <Credit photo={spot.hero} className="absolute bottom-3 right-4 text-paper/70" />
         </div>
-        <div className={`${container} -mt-24 relative pb-4`}>
-          <div className="card-paper max-w-3xl p-6 sm:p-10">
-            <div className="flex flex-wrap gap-2">
-              <span className="chip chip-lilac">{formatDateRange(trip.starts_on, trip.ends_on)}</span>
-              <span className="chip chip-ghost">{trip.location ?? `${trip.spot.name}, ${trip.spot.state}`}</span>
-              {hasFoundingPrice(trip) && <span className="chip chip-coral">Founding cohort · {trip.founding_seats} seats</span>}
-            </div>
-            <h1 className="display mt-5 text-[clamp(2.5rem,6vw,4.75rem)]">{place}</h1>
-            {edition && <p className="mt-1 text-xl font-bold text-mute">{edition}</p>}
-            {trip.description && <p className="mt-5 max-w-prose text-lede text-ink/80">{trip.description}</p>}
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              {bookButton}
-              <a href="#logistics" className="btn-secondary btn-lg">
-                Dates & logistics
-              </a>
-            </div>
+        <div className="card-paper relative -mt-14 max-w-3xl p-6 sm:p-10 md:-mt-24 md:ml-10">
+          <div className="flex flex-wrap gap-2">
+            <span className="chip chip-lilac">{formatDateRange(trip.starts_on, trip.ends_on)}</span>
+            <span className="chip chip-ghost">{trip.location ?? `${trip.spot.name}, ${trip.spot.state}`}</span>
+            {hasFoundingPrice(trip) && <span className="chip chip-coral">Founding cohort · {trip.founding_seats} seats</span>}
+          </div>
+          <h1 className={`${ui.h1} mt-5`}>{place}</h1>
+          {edition && <p className="mt-1 text-xl font-bold text-mute">{edition}</p>}
+          {trip.description && <p className={`${ui.lede} mt-5 max-w-prose`}>{trip.description}</p>}
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            {bookButton}
+            <a href="#logistics" className="btn-secondary btn-lg">
+              Dates & logistics
+            </a>
           </div>
         </div>
       </section>
@@ -199,16 +196,8 @@ export function TripDetail() {
         </div>
       </section>
 
-      {/* f. FAQ — shared accordion; "How does paying work?" lives here */}
-      <section id="faq" className={`${container} scroll-mt-24 py-20 md:py-24`}>
-        <div className="grid gap-8 md:grid-cols-[1fr_2fr] md:gap-16">
-          <div>
-            <p className={eyebrow}>FAQ</p>
-            <h2 className={`${h2} mt-4`}>Questions</h2>
-          </div>
-          <Faq />
-        </div>
-      </section>
+      {/* f. FAQ — shared band; "How does paying work?" lives here */}
+      <FaqSection />
     </article>
   );
 }

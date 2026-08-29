@@ -41,7 +41,11 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
 
 ## Spacing & radius
 
-- Base unit: 4px. Section gap: 60px. Card padding: 40px.
+- Two horizontal frames (`frontend/src/lib/ui.ts`): `ui.hero` — wide, small
+  viewport inset (24/40/48px), Home hero only; `ui.content` — the reading
+  column, centred, max 1152px, used by every other section and page.
+- Vertical rhythm `ui.section`: 80px mobile / 96px desktop between sections.
+- Base unit: 4px. Card padding: 40px.
 - Radius: nav/inputs 10px · cards 20px · buttons 35px (full pill) ·
   boarding-pass stub segments 15px.
 
@@ -55,12 +59,10 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
 - **Floating cards**: paper/light-gray surface, no border, soft shadow,
   20px radius — the base unit for every section below the hero.
 - **Badge/patch marks**: shield-shaped frame around the line-art icons
-  (`Patch` in Marks.tsx) — Le Camp-style "program patch," not freestanding
-  icons.
-- **Boarding pass edition card** (`EditionCard.tsx`) — Trawelt's ticket
-  shape, Le Camp's content hierarchy:
+  (`Patch` in Marks.tsx) — a "program patch," not freestanding icons.
+- **Boarding pass edition card** (`EditionCard.tsx`) — a ticket shape:
   - Segment 1 — photo, full width, clean, no overlay tags.
-  - Perforation divider between segments (Trawelt's torn-ticket line).
+  - Perforation divider between segments (torn-ticket line).
   - Segment 2 — stub, solid color per edition (forest/coral):
     - Metadata row: icon + date range, icon + seats — Manrope label
       style, paper-on-color.

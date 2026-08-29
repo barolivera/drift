@@ -4,7 +4,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { api, type Trip } from '@/lib/api';
 
 /**
- * Pill nav (Trawelt shape): a forest capsule split into segments — wordmark,
+ * Segmented nav: contiguous rounded segments on the surface fill — wordmark,
  * links, and the controls. Coral appears exactly once: "Book a seat", which
  * is a dropdown straight into each edition's booking flow (Trips is for
  * browsing). Account collapses into an avatar dropdown.
@@ -22,7 +22,7 @@ export function Nav() {
 
   const link = ({ isActive }: { isActive: boolean }) =>
     `rounded-full px-3.5 py-2 text-[16px] font-medium transition-colors hover:bg-ink/5 ${isActive ? 'text-ink' : 'text-ink/80'}`;
-  // Trawelt geometry, measured on trawelt.com @1440: contiguous segments, 72px tall,
+  // Geometry: contiguous segments, 72px tall,
   // 15px radius each (the notches come from the corners meeting), #f4f3ef fill.
   const segment = 'flex h-[60px] items-center rounded-[15px] bg-surface text-ink md:h-[72px]';
 
@@ -33,7 +33,7 @@ export function Nav() {
         drift<span className="text-coral">.</span>
       </Link>
 
-      {/* segment 2 — links, right-aligned like Trawelt (hidden on mobile) */}
+      {/* segment 2 — links, right-aligned (hidden on mobile) */}
       <nav className={`${segment} hidden flex-1 justify-end gap-1 px-4 md:flex`}>
         <NavLink to="/trips" className={link}>
           Trips

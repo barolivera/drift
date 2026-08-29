@@ -1,6 +1,6 @@
 /**
  * Drift line icons — one thin stroke weight, no fills, dotted guide lines
- * (the ElevenLabs "Safety, built in" register). Inline SVG on `currentColor`.
+ * Inline SVG on `currentColor`.
  * Used in feature cards, the deep-work block and the footer. Never on the
  * checkout page.
  */

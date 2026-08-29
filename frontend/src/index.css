@@ -215,7 +215,7 @@ details > summary::-webkit-details-marker {
   background-size: 160px 160px;
 }
 
-/* Page gutter — the small fixed margin against the viewport (Le Camp). */
+/* Page gutter — the small fixed margin against the viewport. */
 :root { --gutter: 1.5rem; }
 @media (min-width: 768px) { :root { --gutter: 2.5rem; } }
 @media (min-width: 1280px) { :root { --gutter: 3rem; } }
