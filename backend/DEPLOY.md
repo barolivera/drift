@@ -194,11 +194,12 @@ health check `GET /health`. Add a Postgres service and reference it as
 `PRIVATE_KEY` and `ETHERSCAN_API_KEY` are **not** runtime variables — they only
 serve the contract scripts, keep them off the host.
 
-Migrations and seed run from your machine against the Railway database:
+`backend/db/schema.sql` is idempotent, so the start command runs `db:migrate`
+before the server on every deploy. The Postgres service has no public URL; run
+one-off commands inside the API container instead:
 
 ```bash
-railway run npm run db:migrate -w backend   # backend/db/schema.sql (idempotent)
-railway run npm run db:seed -w backend      # backend/db/seed.sql (upserts by slug)
+railway ssh --service api -- npm run db:seed -w backend   # backend/db/seed.sql (upserts by slug)
 ```
 
 P2P.me webhook: point it at `https://<railway-domain>/webhooks/p2pkit` and set the
