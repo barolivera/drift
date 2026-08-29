@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
+    "db:reset-booking": "tsx src/db/resetBooking.ts",
     "contract:compile": "tsx src/contracts/deploy.ts --compile-only",
     "deploy:contract": "tsx src/contracts/deploy.ts",
     "deploy:contract:mainnet": "tsx src/contracts/deploy.ts --network base",
