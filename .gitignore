@@ -19,3 +19,7 @@ npm-debug.log*
 pgdata/
 # solc output
 backend/src/contracts/artifacts/
+# hosting CLIs
+.vercel
+# tsc incremental output
+*.tsbuildinfo
