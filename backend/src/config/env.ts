@@ -15,6 +15,9 @@ const schema = z.object({
   P2PKIT_CHAIN: z.string().default('base'),
   P2PKIT_ASSET: z.string().default('USDC'),
   DRIFT_TREASURY_ADDRESS: z.string().optional().default(''),
+  // ERC-20 the guests pay with when they choose "Pay with USDC" (same token the
+  // P2P Diamond settles in on this network). Verified on-chain in POST /api/payments/:id/confirm.
+  USDC_ADDRESS: z.string().optional().default(''),
   // On-chain integrator (backend/src/contracts). Used to verify p2pkit orders.
   DRIFT_INTEGRATOR_ADDRESS: z.string().optional().default(''),
   BASE_SEPOLIA_RPC: z.string().optional().default('https://sepolia.base.org'),

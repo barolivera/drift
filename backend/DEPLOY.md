@@ -190,7 +190,8 @@ health check `GET /health`. Add a Postgres service and reference it as
 `CORS_ORIGIN` (comma-separated; `*.vercel.app` allows preview deployments),
 `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `P2PKIT_API_KEY`,
 `P2PKIT_API_URL`, `P2PKIT_WEBHOOK_SECRET`, `P2PKIT_CHAIN`, `P2PKIT_ASSET`,
-`DRIFT_TREASURY_ADDRESS`, `DRIFT_INTEGRATOR_ADDRESS`, `BASE_SEPOLIA_RPC`.
+`DRIFT_TREASURY_ADDRESS`, `DRIFT_INTEGRATOR_ADDRESS`, `USDC_ADDRESS` (direct USDC
+payments are verified against it), `BASE_SEPOLIA_RPC`.
 `PRIVATE_KEY` and `ETHERSCAN_API_KEY` are **not** runtime variables — they only
 serve the contract scripts, keep them off the host.
 

@@ -13,6 +13,8 @@ import {
 import { useApi } from "@/hooks/useApi";
 import { BookingForm } from "@/components/BookingForm";
 import { PaymentCheckout, type WidgetStage } from "@/components/PaymentCheckout";
+import { UsdcCheckout, type UsdcStage } from "@/components/UsdcCheckout";
+import { WaitScreen } from "@/components/WaitScreen";
 import { photos, src, type Photo } from "@/lib/photos";
 import { CONTRACT_URL } from "@/lib/faq";
 
@@ -33,13 +35,20 @@ const NETWORK = "Base Sepolia";
  * `pay`/`verifying` share the Pay step, but each gets its own screen.
  */
 type Stage = "details" | "placing" | "matching" | "pay" | "verifying" | "done";
-const STEP_OF: Record<Stage, number> = {
-  details: 0,
-  placing: 1,
-  matching: 1,
-  pay: 2,
-  verifying: 2,
-  done: 3,
+
+/** How the seat is paid: in local currency through the P2P widget, or USDC straight from the wallet. */
+type Method = "local" | "usdc";
+
+/** Steps per method. USDC has no matching — it is a direct transfer. */
+const STEPS: Record<Method, { labels: string[]; of: Record<Stage, number> }> = {
+  local: {
+    labels: ["Details", "Matching", "Pay", "Done"],
+    of: { details: 0, placing: 1, matching: 1, pay: 2, verifying: 2, done: 3 },
+  },
+  usdc: {
+    labels: ["Details", "Pay", "Done"],
+    of: { details: 0, placing: 1, matching: 1, pay: 1, verifying: 1, done: 2 },
+  },
 };
 
 /**
@@ -78,6 +87,8 @@ export function Book() {
   const [error, setError] = useState<string | null>(null);
   const [loadingBooking, setLoadingBooking] = useState(Boolean(bookingId));
   const [widgetStage, setWidgetStage] = useState<WidgetStage>("checkout");
+  const [method, setMethod] = useState<Method>("local");
+  const [usdcStage, setUsdcStage] = useState<UsdcStage | null>(null); // null = not on the USDC pay screen yet
 
   useEffect(() => {
     api<Trip>(`/api/trips/${tripId}`)
@@ -124,11 +135,13 @@ export function Book() {
   const stage: Stage =
     booking?.status === "confirmed"
       ? "done"
-      : pending && !editing && widgetStage !== "checkout"
-        ? widgetStage === "done"
-          ? "verifying" // order complete, booking confirmation in flight
-          : widgetStage
-        : "details";
+      : pending && !editing && method === "usdc" && usdcStage
+        ? usdcStage
+        : pending && !editing && method === "local" && widgetStage !== "checkout"
+          ? widgetStage === "done"
+            ? "verifying" // order complete, booking confirmation in flight
+            : widgetStage
+          : "details";
   const review = stage === "details" && pending && !editing; // saved details + payment
   const twoCol = stage === "details";
   const waiting =
@@ -162,7 +175,7 @@ export function Book() {
                 : "mx-auto w-full max-w-[560px] flex-1 px-6 pb-16 pt-4 sm:px-10 lg:pt-6"
             }
           >
-            <Steps current={STEP_OF[stage]} centered={!twoCol} />
+            <Steps labels={STEPS[method].labels} current={STEPS[method].of[stage]} centered={!twoCol} />
 
             {/* mobile summary — details only */}
             {twoCol && trip && (
@@ -256,7 +269,7 @@ export function Book() {
                   body="Usually 2–3 minutes. Keep this tab open."
                 />
               )}
-              {ok && stage === "verifying" && (
+              {ok && stage === "verifying" && method === "local" && (
                 <WaitScreen
                   title="Verifying your payment"
                   body="Usually under a minute."
@@ -266,19 +279,49 @@ export function Book() {
               {/* 3 · PAY — the trip in one line */}
               {ok && stage === "pay" && trip && <PayStrip trip={trip} />}
 
-              {/* the payment widget — one slot, never remounted between stages */}
-              {ok && booking && pending && !editing && trip && (
-                <div
-                  className={
-                    stage === "pay"
-                      ? "checkout-pay mt-6"
-                      : review
-                        ? "mt-10"
-                        : ""
-                  }
+              {/* review: how to pay */}
+              {ok && review && (
+                <div className="mt-10">
+                  <h2 className={sectionTitle}>Payment</h2>
+                  <MethodPicker value={method} onChange={setMethod} className="mt-5" />
+                </div>
+              )}
+
+              {/* USDC: pay screen (single column) — the component covers pay + verifying */}
+              {ok && booking && pending && !editing && trip && method === "usdc" && usdcStage && (
+                <div className="mt-6">
+                  <UsdcCheckout
+                    booking={booking}
+                    price={trip.price_usdc}
+                    onStageChange={setUsdcStage}
+                    onSuccess={(b) => setBooking(b)}
+                  />
+                  {usdcStage === "pay" && (
+                    <div className="mt-8 text-center">
+                      <button
+                        onClick={() => setUsdcStage(null)}
+                        className="text-sm text-mute hover:text-ink"
+                      >
+                        ‹ Change payment method
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {ok && review && method === "usdc" && (
+                <button
+                  onClick={() => setUsdcStage("pay")}
+                  className="btn-primary btn-lg mt-6 w-full"
                 >
-                  {review && <h2 className={sectionTitle}>Payment</h2>}
-                  <div className={review ? "mt-5" : ""}>
+                  Continue with USDC
+                </button>
+              )}
+
+              {/* the P2P widget — one slot, never remounted between stages */}
+              {ok && booking && pending && !editing && trip && method === "local" && (
+                <div className={stage === "pay" ? "checkout-pay mt-6" : review ? "mt-6" : ""}>
+                  <div>
                     <PaymentCheckout
                       tripId={trip.id}
                       price={trip.price_usdc}
@@ -368,9 +411,16 @@ function Quiet({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-mute">{children}</p>;
 }
 
-/** Details › Matching › Pay › Done — the only stepper on the page. */
-function Steps({ current, centered }: { current: number; centered: boolean }) {
-  const labels = ["Details", "Matching", "Pay", "Done"];
+/** The only stepper on the page (labels depend on the payment method). */
+function Steps({
+  labels,
+  current,
+  centered,
+}: {
+  labels: string[];
+  current: number;
+  centered: boolean;
+}) {
   return (
     <ol
       className={`flex items-center gap-x-2 whitespace-nowrap text-sm sm:gap-x-3 ${
@@ -416,18 +466,50 @@ function Steps({ current, centered }: { current: number; centered: boolean }) {
   );
 }
 
-/** Spinner, a title and one line — nothing else on the screen. */
-function WaitScreen({ title, body }: { title: string; body: string }) {
+/** Local currency through the P2P widget, or USDC straight from the wallet. */
+function MethodPicker({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: Method;
+  onChange: (m: Method) => void;
+  className?: string;
+}) {
+  const options: { key: Method; title: string; detail: string }[] = [
+    { key: "local", title: "Local currency", detail: "PIX and more, through a verified merchant" },
+    { key: "usdc", title: "USDC", detail: "From your wallet on Base" },
+  ];
   return (
-    <div className="py-16 text-center" role="status" aria-live="polite">
-      <span
-        aria-hidden
-        className="mx-auto block h-12 w-12 animate-spin rounded-full border-[3px] border-line border-t-coral"
-      />
-      <p className="display mt-8 text-[clamp(1.75rem,3.2vw,2.5rem)]">{title}</p>
-      <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-mute">
-        {body}
-      </p>
+    <div role="radiogroup" className={`grid gap-3 sm:grid-cols-2 ${className}`}>
+      {options.map((o) => {
+        const on = o.key === value;
+        return (
+          <button
+            key={o.key}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            onClick={() => onChange(o.key)}
+            className={`card-line px-5 py-4 text-left transition-colors ${
+              on ? "border-ink" : "hover:border-mute"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <span
+                aria-hidden
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                  on ? "border-ink" : "border-line"
+                }`}
+              >
+                {on && <span className="h-2 w-2 rounded-full bg-ink" />}
+              </span>
+              <span className="font-semibold text-ink">{o.title}</span>
+            </span>
+            <span className="mt-1 block pl-7 text-sm text-mute">{o.detail}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

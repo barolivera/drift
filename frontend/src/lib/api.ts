@@ -163,3 +163,25 @@ export interface Me {
   display_name: string | null;
   is_host: boolean;
 }
+
+/** POST /api/payments { method: 'usdc' } — where and how much to pay on-chain. */
+export interface UsdcPaymentIntent {
+  payment_id: string;
+  method: 'usdc';
+  amount_usdc: number;
+  chain: string;
+  token: string;
+  pay_to: string;
+  /** pending | processing (a hash was already sent — resume polling) */
+  status: 'pending' | 'processing';
+  tx_hash: string | null;
+}
+
+/** POST /api/payments/:id/confirm */
+export interface UsdcConfirmResponse {
+  ok: boolean;
+  status: 'settled' | 'pending' | 'rejected' | 'error';
+  code?: 'not_mined' | 'reverted' | 'no_transfer' | 'wrong_recipient' | 'wrong_amount' | 'wrong_sender';
+  error?: string;
+  booking?: Booking;
+}

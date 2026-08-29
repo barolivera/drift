@@ -5,8 +5,12 @@ import { query, one } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { p2pkit, P2PKitError, isP2PKitConfigured } from '../lib/p2pkit.js';
 import { readOrderSession, isIntegratorConfigured } from '../lib/integrator.js';
+import { UsdcVerifyError, isUsdcConfigured, verifyUsdcTransfer } from '../lib/usdc.js';
 
 export const paymentsRouter = Router();
+
+/** Direct USDC payments are verified against BASE_SEPOLIA_RPC (see lib/usdc.ts). */
+const USDC_CHAIN = 'base-sepolia';
 
 /** Quote a trip price in BRL via p2pkit. */
 paymentsRouter.get('/quote', requireAuth, async (req, res) => {
@@ -48,20 +52,37 @@ paymentsRouter.post('/', requireAuth, async (req, res) => {
 
   const amountUsdc = Number(booking.price_usdc) * booking.seats;
 
+  if (method === 'usdc') {
+    if (!isUsdcConfigured()) return res.status(503).json({ error: 'USDC payments not configured' });
+    // One open intent per booking: coming back to the pay screen reuses it.
+    const open = await one<{ id: string; status: string; tx_hash: string | null }>(
+      `SELECT id, status, tx_hash FROM payments WHERE booking_id = $1 AND method = 'usdc' AND status IN ('pending', 'processing')
+       ORDER BY created_at DESC LIMIT 1`,
+      [booking.id],
+    );
+    const payment =
+      open ??
+      (await one<{ id: string; status: string; tx_hash: string | null }>(
+        `INSERT INTO payments (booking_id, method, amount_usdc, chain) VALUES ($1, 'usdc', $2, $3) RETURNING id, status, tx_hash`,
+        [booking.id, amountUsdc, USDC_CHAIN],
+      ));
+    return res.status(open ? 200 : 201).json({
+      payment_id: payment!.id,
+      method,
+      amount_usdc: amountUsdc,
+      chain: USDC_CHAIN,
+      token: env.USDC_ADDRESS,
+      pay_to: env.DRIFT_TREASURY_ADDRESS,
+      // resume: a hash already sent for this intent (refresh mid-verification)
+      status: payment!.status,
+      tx_hash: payment!.tx_hash,
+    });
+  }
+
   const payment = await one<{ id: string }>(
     `INSERT INTO payments (booking_id, method, amount_usdc, chain) VALUES ($1,$2,$3,$4) RETURNING id`,
     [booking.id, method, amountUsdc, env.P2PKIT_CHAIN],
   );
-
-  if (method === 'usdc') {
-    return res.status(201).json({
-      payment_id: payment!.id,
-      method,
-      amount_usdc: amountUsdc,
-      chain: env.P2PKIT_CHAIN,
-      pay_to: env.DRIFT_TREASURY_ADDRESS,
-    });
-  }
 
   if (!isP2PKitConfigured()) return res.status(503).json({ error: 'p2pkit not configured' });
   try {
@@ -188,22 +209,95 @@ paymentsRouter.get('/:orderId', requireAuth, async (req, res) => {
   res.json(row);
 });
 
-/** Client-side USDC transfer confirmation. TODO: verify tx on-chain before settling. */
+/**
+ * Direct USDC payment: the client paid on-chain and sends the tx hash. Nothing
+ * is settled on trust — the receipt must show a Transfer of the configured
+ * token, for the exact amount, to the treasury, from the guest's wallet
+ * (see lib/usdc.ts). Responses:
+ *   200 settled            booking confirmed (idempotent for the same hash)
+ *   202 pending            not mined / not seen yet — poll again with the same hash
+ *   422 <code>             the transaction does not pay for this booking
+ *   409                    hash already used, or the payment is not open
+ */
 paymentsRouter.post('/:id/confirm', requireAuth, async (req, res) => {
   const tx = z.object({ tx_hash: z.string().regex(/^0x[a-fA-F0-9]{64}$/) }).safeParse(req.body);
   if (!tx.success) return res.status(400).json({ error: tx.error.flatten() });
+  const txHash = tx.data.tx_hash.toLowerCase();
 
-  const payment = await one<{ id: string; booking_id: string }>(
-    `UPDATE payments p SET tx_hash = $2, status = 'settled'
-     FROM bookings b
-     WHERE p.id = $1 AND p.booking_id = b.id AND b.user_id = $3 AND p.method = 'usdc' AND p.status = 'pending'
-     RETURNING p.id, p.booking_id`,
-    [req.params.id, tx.data.tx_hash, req.user!.id],
+  const payment = await one<{
+    id: string;
+    booking_id: string;
+    status: string;
+    amount_usdc: string;
+    tx_hash: string | null;
+    wallet_address: string | null;
+  }>(
+    `SELECT p.id, p.booking_id, p.status, p.amount_usdc, p.tx_hash, u.wallet_address
+     FROM payments p
+     JOIN bookings b ON b.id = p.booking_id
+     JOIN users u ON u.id = b.user_id
+     WHERE p.id = $1 AND b.user_id = $2 AND p.method = 'usdc'`,
+    [req.params.id, req.user!.id],
   );
   if (!payment) return res.status(404).json({ error: 'Payment not found' });
-  await query(`UPDATE bookings SET status = 'confirmed' WHERE id = $1`, [payment.booking_id]);
-  res.json({ ok: true });
+
+  if (payment.status === 'settled') {
+    if (payment.tx_hash?.toLowerCase() !== txHash) return res.status(409).json({ error: 'Payment already settled with another transaction' });
+    return res.json({ ok: true, status: 'settled', booking: await bookingById(payment.booking_id) });
+  }
+  if (payment.status !== 'pending' && payment.status !== 'processing') {
+    return res.status(409).json({ error: `Payment is ${payment.status}` });
+  }
+  if (!isUsdcConfigured()) return res.status(503).json({ error: 'USDC payments not configured' });
+
+  // A transaction pays for one booking only.
+  const reused = await one<{ id: string }>(`SELECT id FROM payments WHERE lower(tx_hash) = $1 AND id <> $2`, [txHash, payment.id]);
+  if (reused) return res.status(409).json({ error: 'This transaction was already used for another payment' });
+
+  if (!payment.wallet_address) {
+    console.warn(`usdc payment ${payment.id}: user has no wallet on file — sender check skipped`);
+  }
+
+  try {
+    const verified = await verifyUsdcTransfer({
+      txHash,
+      amountUsdc: payment.amount_usdc,
+      expectedFrom: payment.wallet_address,
+    });
+    await query(
+      `UPDATE payments SET status = 'settled', tx_hash = $2, chain = $3, updated_at = now() WHERE id = $1`,
+      [payment.id, txHash, USDC_CHAIN],
+    );
+    const booking = await one(
+      `UPDATE bookings b SET status = 'confirmed'
+       FROM trips t
+       WHERE b.id = $1 AND t.id = b.trip_id AND b.status IN ('pending', 'confirmed')
+       RETURNING b.*, t.title, t.starts_on, t.ends_on, t.price_usdc`,
+      [payment.booking_id],
+    );
+    console.info(`usdc payment ${payment.id} settled: ${verified.value} units from ${verified.from} in block ${verified.blockNumber}`);
+    return res.json({ ok: true, status: 'settled', booking });
+  } catch (err) {
+    if (err instanceof UsdcVerifyError) {
+      if (err.retryable) {
+        // Remember the hash so a refresh can keep polling; the booking stays pending.
+        await query(`UPDATE payments SET tx_hash = $2, status = 'processing', updated_at = now() WHERE id = $1`, [payment.id, txHash]);
+        return res.status(202).json({ ok: false, status: 'pending', code: err.code, error: err.message });
+      }
+      console.warn(`usdc payment ${payment.id} rejected (${err.code}): ${err.message} [${txHash}]`);
+      return res.status(422).json({ ok: false, status: 'rejected', code: err.code, error: err.message });
+    }
+    console.error('usdc verification failed', err);
+    return res.status(502).json({ ok: false, status: 'error', error: 'Could not verify the transaction on-chain right now' });
+  }
 });
+
+async function bookingById(id: string) {
+  return one(
+    `SELECT b.*, t.title, t.starts_on, t.ends_on, t.price_usdc FROM bookings b JOIN trips t ON t.id = b.trip_id WHERE b.id = $1`,
+    [id],
+  );
+}
 
 /** p2pkit webhook. Mounted with raw body so the HMAC can be verified. */
 paymentsRouter.post('/webhook/p2pkit', raw({ type: '*/*' }), async (req, res) => {
