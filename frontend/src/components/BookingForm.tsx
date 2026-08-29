@@ -133,7 +133,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true }: Boo
 
       <Field label="Telegram" helper="Trip comms happen on Telegram — this is how we reach you" error={fieldErrors.telegram}>
         <div className="flex items-center rounded-xl border border-line bg-paper transition-colors focus-within:border-ink">
-          <span className="pixel pl-3.5 text-mute">@</span>
+          <span className="label pl-3.5 text-mute">@</span>
           <input
             className="w-full rounded-xl bg-transparent px-2 py-2.5 text-sm outline-none"
             value={telegram}
@@ -165,7 +165,7 @@ export function BookingForm({ trip, onSaved, onCancel, showSummary = true }: Boo
             return (
               <label
                 key={lvl.value}
-                className={`pixel cursor-pointer rounded-full px-3.5 py-2 transition-colors ${
+                className={`label cursor-pointer rounded-full px-3.5 py-2 transition-colors ${
                   on ? 'bg-mustard text-ink' : 'border border-line bg-paper text-mute hover:border-ink hover:text-ink'
                 }`}
               >

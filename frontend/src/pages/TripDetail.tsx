@@ -8,9 +8,9 @@ import { Faq } from '@/components/Faq';
 import { inclusionsFrom } from '@/lib/inclusions';
 import { photos, src, srcSet, type Photo } from '@/lib/photos';
 
-const container = 'mx-auto w-full max-w-6xl px-5 sm:px-8';
-const eyebrow = 'pixel text-mute';
-const h2 = 'text-section font-extrabold tracking-tight text-ink';
+const container = 'w-full px-6 md:px-10 xl:px-12';
+const eyebrow = 'label text-mute';
+const h2 = 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink';
 
 /* Per-spot copy that isn't in the DB yet: the place photo and how to get there. */
 const SPOT: Record<string, { hero: Photo; house: Photo; airport: string; transfer: string }> = {
@@ -85,7 +85,7 @@ export function TripDetail() {
               <span className="chip chip-ghost">{trip.location ?? `${trip.spot.name}, ${trip.spot.state}`}</span>
               {hasFoundingPrice(trip) && <span className="chip chip-coral">Founding cohort · {trip.founding_seats} seats</span>}
             </div>
-            <h1 className="mt-5 text-display-xl font-extrabold">{place}</h1>
+            <h1 className="display mt-5 text-[clamp(2.5rem,6vw,4.75rem)]">{place}</h1>
             {edition && <p className="mt-1 text-xl font-bold text-mute">{edition}</p>}
             {trip.description && <p className="mt-5 max-w-prose text-lede text-ink/80">{trip.description}</p>}
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -99,11 +99,11 @@ export function TripDetail() {
       </section>
 
       {/* b. THE PLACE — description + photo */}
-      <section className={`${container} py-20 md:py-28`}>
+      <section className={`${container} py-20 md:py-24`}>
         <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-16">
           <div>
             <p className={eyebrow}>The place</p>
-            <h2 className={`${h2} mt-3`}>The house at {trip.spot.name}</h2>
+            <h2 className={`${h2} mt-4`}>The house at {trip.spot.name}</h2>
             <div className="mt-6 space-y-4 text-ink/80">
               {paragraphs.map((para, i) => (
                 <p key={i} className={i === 0 ? 'text-lede' : 'leading-relaxed'}>
@@ -112,7 +112,7 @@ export function TripDetail() {
               ))}
               {trip.who_its_for && (
                 <p className="rounded-2xl bg-surface p-5 text-sm leading-relaxed text-ink/80">
-                  <span className="pixel mb-2 block text-mute">Who this edition is for</span>
+                  <span className="label mb-2 block text-mute">Who this edition is for</span>
                   {trip.who_its_for}
                 </p>
               )}
@@ -133,15 +133,15 @@ export function TripDetail() {
       </section>
 
       {/* c. INCLUSIONS — same grid as the Home */}
-      <section className={`${container} pb-20 md:pb-28`}>
-        <div className="card p-6 sm:p-10 md:p-14">
+      <section className={`${container} py-20 md:py-24`}>
+        <div className="card p-6 sm:p-10">
           <div className="grid gap-10 md:grid-cols-[1fr_2fr] md:gap-16">
             <div>
               <p className={eyebrow}>Included</p>
-              <h2 className={`${h2} mt-3`}>What two weeks include</h2>
+              <h2 className={`${h2} mt-4`}>What two weeks include</h2>
               {trip.not_included.length > 0 && (
                 <p className="mt-5 text-sm text-mute">
-                  <span className="pixel mb-1.5 block">Not included</span>
+                  <span className="label mb-1.5 block">Not included</span>
                   {trip.not_included.join(' · ')}
                 </p>
               )}
@@ -152,9 +152,9 @@ export function TripDetail() {
       </section>
 
       {/* d. LOGISTICS — dates, seats, getting there. No day-by-day schedule. */}
-      <section id="logistics" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
+      <section id="logistics" className={`${container} scroll-mt-24 py-20 md:py-24`}>
         <p className={eyebrow}>Logistics</p>
-        <h2 className={`${h2} mt-3`}>Dates and getting there</h2>
+        <h2 className={`${h2} mt-4`}>Dates and getting there</h2>
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           <div className="card p-6 sm:p-8">
             <p className={eyebrow}>Dates</p>
@@ -183,8 +183,8 @@ export function TripDetail() {
       </section>
 
       {/* e. BOOK — the CTA card */}
-      <section className={`${container} pb-20 md:pb-28`}>
-        <div className="card flex flex-col gap-6 p-6 sm:p-10 md:flex-row md:items-center md:justify-between md:p-14">
+      <section className={`${container} py-20 md:py-24`}>
+        <div className="card flex flex-col gap-6 p-6 sm:p-10 md:flex-row md:items-center md:justify-between">
           <div>
             <p className={eyebrow}>Reserve your seat</p>
             <PriceTag trip={trip} size="lg" className="mt-3" />
@@ -200,11 +200,11 @@ export function TripDetail() {
       </section>
 
       {/* f. FAQ — shared accordion; "How does paying work?" lives here */}
-      <section id="faq" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
+      <section id="faq" className={`${container} scroll-mt-24 py-20 md:py-24`}>
         <div className="grid gap-8 md:grid-cols-[1fr_2fr] md:gap-16">
           <div>
             <p className={eyebrow}>FAQ</p>
-            <h2 className={`${h2} mt-3`}>Questions</h2>
+            <h2 className={`${h2} mt-4`}>Questions</h2>
           </div>
           <Faq />
         </div>
@@ -215,7 +215,7 @@ export function TripDetail() {
 
 function Credit({ photo, className = '' }: { photo: Photo; className?: string }) {
   return (
-    <a href={photo.page} target="_blank" rel="noreferrer" className={`pixel normal-case hover:underline ${className}`} title="Placeholder photo — replace with Drift's own">
+    <a href={photo.page} target="_blank" rel="noreferrer" className={`label normal-case hover:underline ${className}`} title="Placeholder photo — replace with Drift's own">
       Photo: {photo.author} / Unsplash
     </a>
   );

@@ -16,8 +16,8 @@ export function Trips() {
 
   return (
     <div>
-      <p className="pixel text-mute">2027</p>
-      <h1 className="mt-2 text-section font-extrabold tracking-tight">The editions</h1>
+      <p className="label text-mute">2027</p>
+      <h1 className="display mt-2 text-[clamp(1.75rem,3.2vw,2.75rem)]">Pick your water</h1>
       <p className="mt-2 max-w-md text-mute">Two houses, two seasons. Sixteen seats each, sold in order of application.</p>
       <div className="mt-8 grid gap-6 md:grid-cols-2 md:gap-8">
         {trips.map((t) => (

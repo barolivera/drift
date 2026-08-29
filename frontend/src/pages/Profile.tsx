@@ -42,9 +42,9 @@ export function Profile() {
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <section className="card p-6 sm:p-8">
-        <p className="pixel text-mute">Account</p>
+        <p className="label text-mute">Account</p>
         <h1 className="mt-2 text-2xl font-bold tracking-tight">{me?.display_name ?? me?.email ?? 'Nomad'}</h1>
-        <p className="pixel mt-3 text-mute">{me?.wallet_address ?? 'no wallet linked'}</p>
+        <p className="label mt-3 text-mute">{me?.wallet_address ?? 'no wallet linked'}</p>
       </section>
       <section>
         <div className="mb-4 flex items-end justify-between">
@@ -67,7 +67,7 @@ export function Profile() {
                     <span className="chip chip-lilac">
                       {b.starts_on} → {b.ends_on}
                     </span>
-                    <span className="pixel self-center text-mute">{b.id.slice(0, 8)}</span>
+                    <span className="label self-center text-mute">{b.id.slice(0, 8)}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

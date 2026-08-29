@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { api, type Trip } from '@/lib/api';
 import { photos, src, srcSet, type Photo } from '@/lib/photos';
-import { BlocksMark, LaptopMark, PalmMark, WaveMark } from '@/components/Marks';
+import { BlocksMark, LaptopMark, PalmMark, Patch, WaveMark } from '@/components/Marks';
 import { Inclusions } from '@/components/Inclusions';
 import { HOME_INCLUSIONS } from '@/lib/inclusions';
 import { EditionCard } from '@/components/EditionCard';
 import { Faq } from '@/components/Faq';
+import { ScrollReveal } from '@/components/ScrollReveal';
 
 
 /* Layout primitives — one paper page, surface cards float on it. */
-const container = 'mx-auto w-full max-w-6xl px-5 sm:px-8';
-const section = 'py-20 md:py-28';
-const h2 = 'text-section font-extrabold tracking-tight text-ink';
-const eyebrow = 'pixel text-mute';
+const container = 'w-full px-6 md:px-10 xl:px-12'; // hero: wide, small inset
+const content = 'mx-auto w-full max-w-6xl px-6 md:px-8'; // body: narrower, centred, editorial (Lunte)
+const section = 'py-20 md:py-24';
+const h2 = 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink';
 
 export function Home() {
   const [trips, setTrips] = useState<Trip[] | null>(null);
@@ -27,7 +28,7 @@ export function Home() {
   return (
     <div className="bg-paper text-ink">
       <Hero />
-      <Manifesto />
+      <WhatItIs />
       <LifeAtTheHouse />
       <Editions trips={trips} />
       <WhoItsFor />
@@ -37,74 +38,65 @@ export function Home() {
   );
 }
 
-/* ───────────── 1. HERO — headline on paper, grainy blob behind it, media panel below ───────────── */
+/* ───────────── 1. HERO — full-bleed photo, dark scrim left→right, light text ───────────── */
+// Drift's own photo (public/images), dithered — no credit line needed.
+const HERO_BW = '/images/hero-bw.png';
+const HERO_COLOR = '/images/hero-color.png';
+
 function Hero() {
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* gradient blob: forest + lilac + mustard, blurred, low opacity, with grain */}
-      <div aria-hidden className="absolute inset-x-0 top-0 -z-10 h-[720px]">
-        <div className="blob left-[-6%] top-[-10%] h-[520px] w-[520px] bg-forest opacity-[0.28]" />
-        <div className="blob left-[22%] top-[6%] h-[560px] w-[560px] bg-lilac opacity-[0.55]" />
-        <div className="blob left-[48%] top-[-14%] h-[480px] w-[480px] bg-mustard opacity-[0.6]" />
-        <div className="blob left-[8%] top-[34%] h-[360px] w-[520px] bg-coral opacity-[0.16]" />
-        <div className="grain" />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-paper" />
-      </div>
+    <section className={`${container} pt-[var(--gutter)]`}>
+      {/* .hero-frame mounts full-viewport and settles into this rounded box (see index.css) */}
+      <div className="hero-frame relative isolate overflow-hidden bg-ink text-paper">
+        {/* starts in black & white, the colour version fades in once the frame has settled */}
+        <img
+          src={HERO_BW}
+          alt=""
+          aria-hidden
+          fetchPriority="high"
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-[60%_center]"
+        />
+        <img
+          src={HERO_COLOR}
+          alt="A river mouth meeting the beach at Itamambuca, Ubatuba"
+          fetchPriority="high"
+          className="hero-color absolute inset-0 -z-20 h-full w-full object-cover object-[60%_center]"
+        />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-ink/35" />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-ink/50 to-transparent" />
 
-      <div className={`${container} pt-14 md:pt-24`}>
-        <div className="grid gap-8 md:grid-cols-[1.25fr_1fr] md:items-end md:gap-16">
-          <div>
-            <span className="chip chip-lilac">Drift · Brazil · 2027</span>
-            <h1 className="mt-6 max-w-[11ch] text-display-2xl font-extrabold text-ink">
-              Two weeks. Sixteen people. One beach.
-            </h1>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a href="#editions" className="btn-primary btn-lg">
-                See the editions
-              </a>
-              <a href="#paying" className="btn-secondary btn-lg">
-                How paying works
-              </a>
-            </div>
-          </div>
-          <p className="max-w-md text-lede text-ink/80 md:pb-2">
-            Surf residencies in Brazil for people who work remotely and build things. Pay in your currency — Drift
-            settles in USDC on Base.
-          </p>
+        <div className="flex h-full flex-col items-center justify-center px-6 py-24 text-center sm:px-12">
+          <h1 className="display text-[clamp(2.5rem,7.8vw,7rem)] text-paper">
+            Pause. Reconnect.
+            <br />
+            Build Together.
+          </h1>
         </div>
-
-        {/* media panel */}
-        <div className="card relative mt-12 p-2 sm:p-3 md:mt-16">
-          <div className="relative overflow-hidden rounded-[20px]">
-            <img
-              src={src(photos.hero, 1600)}
-              srcSet={srcSet(photos.hero)}
-              sizes="(min-width: 1152px) 1152px, 100vw"
-              alt={photos.hero.alt}
-              className="aspect-[4/3] w-full object-cover sm:aspect-[21/9]"
-            />
-            <div className="absolute left-4 top-4 flex flex-wrap gap-2 sm:left-5 sm:top-5">
-              <span className="chip chip-mustard">Itamambuca · 16–30 Jan</span>
-              <span className="chip chip-lilac">Praia do Rosa · 24 Apr–8 May</span>
-            </div>
-            <Credit photo={photos.hero} className="absolute bottom-3 right-4 text-paper/70" />
-          </div>
-        </div>
+        <a
+          href="#what"
+          aria-label="Scroll to what it is"
+          className="absolute bottom-6 left-1/2 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-paper text-ink shadow-soft transition hover:bg-surface"
+        >
+          <span aria-hidden>↓</span>
+        </a>
       </div>
     </section>
   );
 }
 
-/* ───────────── 2. MANIFESTO — text on the paper ───────────── */
-function Manifesto() {
+/* ───────────── 2. WHAT IT IS — text on the paper ───────────── */
+function WhatItIs() {
   return (
-    <section className={`${container} ${section}`}>
-      <p className={eyebrow}>What it is</p>
-      <p className="mt-5 max-w-3xl text-display-md font-bold tracking-tight text-ink">
-        This is not a surf camp with wifi. Sixteen people share a house for two weeks: mornings in the water, three
-        protected hours of work in the middle of the day, and a demo night at the end.{' '}
-        <span className="text-coral">You leave with something shipped and fifteen people who saw you build it.</span>
-      </p>
+    // extra room above and below so the fill completes before "Life at the house" arrives
+    <section id="what" className={`${content} scroll-mt-20 py-32 md:py-48`}>
+      <ScrollReveal
+        className="max-w-5xl text-[clamp(1.75rem,3.4vw,3rem)] font-normal leading-[1.17] tracking-[-0.01em]"
+        segments={[
+          {
+            text: "Drift is a seasonal surf residency for people who build — in code, in community, in life. Mornings for deep work. Afternoons for surf, yoga, and the conversations that don't happen over Slack.",
+          },
+        ]}
+      />
     </section>
   );
 }
@@ -112,16 +104,9 @@ function Manifesto() {
 /* ───────────── 3. LIFE AT THE HOUSE — inclusions grid, no hours ───────────── */
 function LifeAtTheHouse() {
   return (
-    <section className={`${container} pb-20 md:pb-28`}>
-      <div className="grid gap-10 md:grid-cols-[1fr_2fr] md:gap-16">
-        <div>
-          <p className={eyebrow}>Included</p>
-          <h2 className={`${h2} mt-3`}>Life at the house</h2>
-          <p className="mt-4 max-w-xs text-lede text-ink/80">Same house rules in every edition. Surf, work, eat together.</p>
-          <WaveMark className="mt-10 hidden h-28 w-28 text-forest md:block" title="Surf" />
-        </div>
-        <Inclusions items={HOME_INCLUSIONS} />
-      </div>
+    <section className={`${content} pb-32 md:pb-44`}>
+      <h2 className={`${h2} max-w-[12ch] uppercase`}>Life at the house</h2>
+      <Inclusions items={HOME_INCLUSIONS} variant="plain" className="mt-14 md:mt-20" />
     </section>
   );
 }
@@ -129,14 +114,8 @@ function LifeAtTheHouse() {
 /* ───────────── 4. THE EDITIONS — card grid, colour band per edition ───────────── */
 function Editions({ trips }: { trips: Trip[] | null }) {
   return (
-    <section id="editions" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
-      <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className={eyebrow}>2027</p>
-          <h2 className={`${h2} mt-3`}>Pick your water</h2>
-        </div>
-        <p className="max-w-xs text-sm text-mute">Two houses, two seasons. Sixteen seats each, sold in order of application.</p>
-      </div>
+    <section id="editions" className={`${content} scroll-mt-24 py-20 md:py-24`}>
+      <h2 className={`${h2} mb-8`}>Pick your water</h2>
 
       {trips === null && <p className="text-mute">Loading…</p>}
       {trips && trips.length === 0 && <p className="text-mute">No editions announced yet.</p>}
@@ -147,116 +126,91 @@ function Editions({ trips }: { trips: Trip[] | null }) {
           ))}
         </div>
       )}
-      <p className="pixel mt-3 text-right text-mute">
+      <p className="label mt-3 text-right text-mute">
         Photos: {photos.itamambuca.author} · {photos.praiaDoRosa.author} (Unsplash)
       </p>
     </section>
   );
 }
 
-/* ───────────── 5. WHO IT'S FOR — three feature cards, line icon on top ───────────── */
+/* ───────────── 5. WHO IT'S FOR — three tall surface cards, big line icon, title + one line (ElevenLabs "Safety, built in") ───────────── */
 function WhoItsFor() {
   const profiles = [
     {
       title: 'Remote workers',
       Icon: LaptopMark,
-      body: 'You already have the job. You want a fortnight where the job and the ocean fit in the same day — fibre, monitors, call booths, and three hours nobody interrupts.',
+      body: 'You already have the job. You want a fortnight where the job and the ocean fit in the same day.',
     },
     {
       title: 'Founders and builders',
       Icon: BlocksMark,
-      body: 'You have a thing you keep not shipping. Two weeks and a demo night on the last Thursday is a deadline. Everyone shows what they built; no slides required.',
+      body: 'You have a thing you keep not shipping. Two weeks and a demo night is a deadline.',
     },
     {
       title: 'People who have never surfed',
       Icon: WaveMark,
-      body: 'Sessions are split by level and the first three days exist for exactly this. Itamambuca in January is the friendlier water.',
+      body: 'Sessions are split by level and the first three days exist for exactly this.',
     },
   ];
   return (
-    <section className={`${container} pb-20 md:pb-28`}>
-      <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className={eyebrow}>Residents</p>
-          <h2 className={`${h2} mt-3`}>Who it's for</h2>
-        </div>
-        <Link to="/trips" className="btn-secondary self-start md:self-auto">
-          See the trips
-        </Link>
-      </div>
-      <div className="grid gap-5 md:grid-cols-3">
+    <section id="who" className={`${content} ${section}`}>
+      <h2 className={h2}>Who it's for</h2>
+      <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
         {profiles.map(({ title, Icon, body }) => (
-          <FeatureCard key={title} title={title} body={body} Icon={Icon} />
+          <article key={title} className="card flex min-h-[520px] flex-col p-8 md:min-h-[600px] sm:p-10">
+            <div className="flex flex-1 items-center justify-center py-6">
+              <Icon className="h-48 w-48 text-ink md:h-56 md:w-56" title={title} />
+            </div>
+            <h3 className="text-xl font-semibold tracking-tight text-ink">{title}</h3>
+            <p className="mt-3 text-base leading-relaxed text-mute">{body}</p>
+          </article>
         ))}
       </div>
     </section>
   );
 }
 
-function FeatureCard({
-  title,
-  body,
-  Icon,
-  badge,
-}: {
-  title: string;
-  body: React.ReactNode;
-  Icon: (p: React.SVGProps<SVGSVGElement> & { title?: string }) => JSX.Element;
-  badge?: React.ReactNode;
-}) {
-  return (
-    <article className="card group flex flex-col p-6 sm:p-8">
-      <div className="flex items-start justify-between">
-        {badge ?? <span />}
-      </div>
-      <div className="flex h-52 items-center justify-center md:h-64">
-        <Icon className="h-40 w-40 text-ink transition-colors duration-300 group-hover:text-forest md:h-48 md:w-48" title={title} />
-      </div>
-      <h3 className="mt-2 text-lg font-bold tracking-tight text-ink">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-mute">{body}</p>
-    </article>
-  );
-}
-
 /* ───────────── 6. FAQ — one card; "How does paying work?" lives here now ───────────── */
 function FaqSection() {
   return (
-    <section id="faq" className={`${container} scroll-mt-24 pb-20 md:pb-28`}>
-      <div className="grid gap-8 md:grid-cols-[1fr_2fr] md:gap-16">
-        <div>
-          <p className={eyebrow}>FAQ</p>
-          <h2 className={`${h2} mt-3`}>Questions</h2>
-        </div>
-        <Faq />
+    <section id="faq" className="scroll-mt-24 bg-surface py-20 md:py-24">
+      <div className={content}>
+        <p className="label text-center text-sm text-mute">Common questions</p>
+        <Faq className="mt-10" />
       </div>
     </section>
   );
 }
 
-/* ───────────── 8. FOOTER CTA — photo card, palm line icon ───────────── */
+/* ───────────── 8. FOOTER CTA — dark band, photo, big title (Le Camp "Prêt à gravir les sommets") ───────────── */
 function FooterCta() {
   return (
-    <section className={`${container} pb-20 md:pb-28`}>
-      <div className="card relative isolate overflow-hidden text-paper">
+    <section className={`${content} pb-6 pt-20 md:pt-24`}>
+      <div className="relative isolate overflow-hidden rounded-[28px] bg-ink text-paper">
         <img
-          src={src(photos.footer, 1600)}
-          srcSet={srcSet(photos.footer)}
-          sizes="(min-width: 1152px) 1152px, 100vw"
-          alt={photos.footer.alt}
-          loading="lazy"
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          src={src(photos.hero, 1600)}
+          srcSet={srcSet(photos.hero)}
+          sizes="100vw"
+          alt={photos.hero.alt}
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-bottom grayscale"
         />
-        <div className="absolute inset-0 -z-10 bg-ink/55" />
-        <div className="flex flex-col items-start gap-8 p-8 sm:p-12 md:flex-row md:items-end md:justify-between md:p-16">
-          <div>
-            <PalmMark className="mb-6 h-20 w-20 text-paper" title="Drift" />
-            <p className="max-w-[16ch] text-display-lg font-extrabold">Sixteen seats. Two editions. Pick your water.</p>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/85 via-ink/55 to-ink/25" />
+        <div className="flex min-h-[520px] flex-col items-start justify-between gap-10 p-8 sm:p-12 md:p-16">
+          <div className="flex w-full items-start justify-between">
+            <p className="label text-paper/70">Brazil · 2027</p>
+            <Patch Icon={PalmMark} title="Drift" className="h-20 text-paper/80" />
           </div>
-          <a href="#editions" className="btn-primary btn-lg">
-            See the editions ↑
-          </a>
+          <div className="grid w-full gap-8 md:grid-cols-[1fr_auto] md:items-end">
+            <div>
+              <h2 className="display max-w-[14ch] text-[clamp(2.25rem,5.6vw,4.75rem)]">Sixteen seats. Two editions. Pick your water.</h2>
+              <p className="mt-4 max-w-md text-base text-paper/70">Pay in your currency; Drift settles in USDC on Base. Seat held while you pay.</p>
+            </div>
+            <a href="#editions" className="btn-primary btn-lg">
+              See the editions ↑
+            </a>
+          </div>
         </div>
-        <Credit photo={photos.footer} className="absolute bottom-3 right-4 text-paper/60" />
+        <Credit photo={photos.hero} className="absolute bottom-3 right-4 text-paper/50" />
       </div>
     </section>
   );
@@ -269,7 +223,7 @@ function Credit({ photo, className = '' }: { photo: Photo; className?: string })
       href={photo.page}
       target="_blank"
       rel="noreferrer"
-      className={`pixel normal-case hover:underline ${className}`}
+      className={`label normal-case hover:underline ${className}`}
       title="Placeholder photo — replace with Drift's own"
     >
       Photo: {photo.author} / Unsplash

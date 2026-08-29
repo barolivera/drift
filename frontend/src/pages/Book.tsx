@@ -72,7 +72,7 @@ export function Book() {
           <Link to="/" className="text-xl font-extrabold tracking-tight">
             drift<span className="text-coral">.</span>
           </Link>
-          <span className="pixel text-mute">Secure booking</span>
+          <span className="label text-mute">Secure booking</span>
         </div>
         <div className="mx-auto h-px max-w-2xl bg-line/70" />
       </header>
@@ -101,7 +101,7 @@ export function Book() {
             {ready && authenticated && !loadingBooking && error && bookingId && (
               <div className="mt-8 rounded-2xl bg-red-50 p-6 text-sm text-red-800">
                 <p>
-                  Couldn't load booking <code className="pixel normal-case">{bookingId}</code>: {error}
+                  Couldn't load booking <code className="label normal-case">{bookingId}</code>: {error}
                 </p>
                 <button onClick={() => navigate(`/trips/${tripId}/book`, { replace: true })} className="mt-3 underline">
                   Start again
@@ -111,7 +111,7 @@ export function Book() {
 
             {ready && authenticated && !loadingBooking && !booking && !error && (
               <section className="card mt-8 p-6 sm:p-8">
-                <p className="pixel text-mute">Step 1 of 2</p>
+                <p className="label text-mute">Step 1 of 2</p>
                 <h2 className="mt-2 text-xl font-bold tracking-tight">Your details</h2>
                 <p className="mt-1 text-sm text-mute">Two minutes. Then you pay and the seat is yours.</p>
                 <div className="mt-6">
@@ -123,7 +123,7 @@ export function Book() {
             {ready && authenticated && booking && booking.status === 'pending' && (
               <section className="card mt-8 p-6 sm:p-8">
                 <div className="flex items-center justify-between gap-4">
-                  <p className="pixel text-mute">Step 2 of 2</p>
+                  <p className="label text-mute">Step 2 of 2</p>
                   <span className="chip chip-mustard">Pending</span>
                 </div>
                 <h2 className="mt-2 text-xl font-bold tracking-tight">Payment</h2>
@@ -155,12 +155,12 @@ export function Book() {
                       Your seat at {trip.spot.name} is confirmed. We'll reach you on Telegram before you land.
                     </p>
                     <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5">
-                      <dt className="pixel text-mute">booking</dt>
-                      <dd className="pixel normal-case text-ink">{booking.id}</dd>
-                      <dt className="pixel text-mute">status</dt>
-                      <dd className="pixel text-ink">{booking.status}</dd>
-                      <dt className="pixel text-mute">dates</dt>
-                      <dd className="pixel text-ink">
+                      <dt className="label text-mute">booking</dt>
+                      <dd className="label normal-case text-ink">{booking.id}</dd>
+                      <dt className="label text-mute">status</dt>
+                      <dd className="label text-ink">{booking.status}</dd>
+                      <dt className="label text-mute">dates</dt>
+                      <dd className="label text-ink">
                         {trip.starts_on} → {trip.ends_on}
                       </dd>
                     </dl>
@@ -184,7 +184,7 @@ export function Book() {
       </main>
 
       <footer className="mx-auto w-full max-w-2xl px-5 py-6">
-        <span className="pixel text-mute">Drift · payments settle on Base via P2P.me · contract 0x7e1b…bb3F</span>
+        <span className="label text-mute">Drift · payments settle on Base via P2P.me · contract 0x7e1b…bb3F</span>
       </footer>
     </div>
   );
@@ -198,14 +198,14 @@ function Summary({ trip, booking }: { trip: Trip; booking: Booking | null }) {
   const founding = hasFoundingPrice(trip);
   return (
     <section>
-      <p className="pixel text-mute">{booking ? `Booking ${booking.id.slice(0, 8)}` : 'New booking'}</p>
+      <p className="label text-mute">{booking ? `Booking ${booking.id.slice(0, 8)}` : 'New booking'}</p>
       <h1 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">{trip.title}</h1>
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <span className="chip chip-lilac">{formatDateRange(trip.starts_on, trip.ends_on)}</span>
         <span className="chip chip-ghost">{trip.location ?? `${trip.spot.name}, ${trip.spot.state}`}</span>
       </div>
       <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-2">
-        <span className="pixel text-mute">Price</span>
+        <span className="label text-mute">Price</span>
         {founding && <s className="text-sm text-mute">{formatUsdc(trip.price_full_usdc!)} USDC</s>}
         <span className="text-lg font-bold">{formatUsdc(trip.price_usdc)} USDC</span>
         {founding && <span className="chip chip-coral">Founding cohort · {trip.founding_seats} seats</span>}

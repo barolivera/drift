@@ -189,3 +189,55 @@ export function BoardMark({ title = 'Boards', ...p }: IconProps) {
     </Svg>
   );
 }
+
+/** Small calendar glyph for metadata rows (boarding-pass stub). */
+export function CalendarMark({ title = 'Dates', ...p }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" role="img" aria-label={title} {...p}>
+      <rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Small people glyph for seat counts. */
+export function SeatMark({ title = 'Seats', ...p }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" role="img" aria-label={title} {...p}>
+      <circle cx="9" cy="8" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M2.5 20c.5-4 3.5-6 6.5-6s6 2 6.5 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="17" cy="9" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M16 14.5c3 0 5 2 5.5 5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/**
+ * Patch — a shield-shaped frame around a line icon, so marks read as a
+ * program patch rather than a freestanding icon. Size it with a height class.
+ */
+export function Patch({
+  Icon,
+  title,
+  className = '',
+}: {
+  Icon: (p: IconProps) => JSX.Element;
+  title: string;
+  className?: string;
+}) {
+  return (
+    <span className={`relative inline-flex aspect-[100/112] items-center justify-center ${className}`}>
+      <svg viewBox="0 0 100 112" aria-hidden className="absolute inset-0 h-full w-full">
+        <path
+          d="M50 4 L92 17 V56 C92 82 73 101 50 108 C27 101 8 82 8 56 V17 Z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.25"
+          strokeLinejoin="round"
+        />
+        <path d="M50 11 L86 22 V56 C86 78 70 95 50 101" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="1 4" strokeLinecap="round" />
+      </svg>
+      <Icon className="h-[56%] w-[56%]" title={title} />
+    </span>
+  );
+}

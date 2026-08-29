@@ -308,7 +308,7 @@ export function PaymentCheckout({ tripId, price, productName, booking: initialBo
       {orderId && !payment.confirmed && !payment.failed && (
         <Status>
           Waiting for payment confirmation…
-          {payment.status && <span className="pixel ml-1 text-mute">{payment.status}</span>}
+          {payment.status && <span className="label ml-1 text-mute">{payment.status}</span>}
         </Status>
       )}
       <Checkout

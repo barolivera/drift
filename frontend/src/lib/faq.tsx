@@ -38,7 +38,7 @@ export const FAQ_ITEMS: FaqItem[] = [
           <span className="chip chip-forest">0x7e1b…bb3F</span>
           <span className="chip chip-ghost">Base Sepolia</span>
           <span className="chip chip-ghost">Verified source</span>
-          <a href={CONTRACT_URL} target="_blank" rel="noreferrer" className="pixel underline underline-offset-4">
+          <a href={CONTRACT_URL} target="_blank" rel="noreferrer" className="label underline underline-offset-4">
             Read the contract on Basescan ↗
           </a>
         </p>
