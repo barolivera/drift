@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowUpRight, CaretLeft, Check } from "@phosphor-icons/react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { usePrivy } from "@privy-io/react-auth";
 import {
@@ -300,9 +301,9 @@ export function Book() {
                     <div className="mt-8 text-center">
                       <button
                         onClick={() => setUsdcStage(null)}
-                        className="text-sm text-mute hover:text-ink"
+                        className="inline-flex items-center gap-1 text-sm text-mute hover:text-ink"
                       >
-                        ‹ Change payment method
+                        <CaretLeft weight="bold" /> Change payment method
                       </button>
                     </div>
                   )}
@@ -442,7 +443,7 @@ function Steps({
                       : "border border-line text-mute"
                 }`}
               >
-                {done ? "✓" : i + 1}
+                {done ? <Check weight="bold" size={12} aria-label="done" /> : i + 1}
               </span>
               <span
                 className={
@@ -568,7 +569,7 @@ function Done({ trip, booking }: { trip: Trip; booking: Booking }) {
             rel="noreferrer"
             className="btn-primary btn-lg"
           >
-            Join the trip's Telegram ↗
+            Join the trip's Telegram <ArrowUpRight weight="bold" className="inline-block align-[-0.1em]" />
           </a>
         )}
         <Link
@@ -587,7 +588,7 @@ function Done({ trip, booking }: { trip: Trip; booking: Booking }) {
           rel="noreferrer"
           className="label text-mute hover:text-ink"
         >
-          Contract {CONTRACT_SHORT} ↗
+          Contract {CONTRACT_SHORT} <ArrowUpRight weight="bold" className="inline-block align-[-0.1em]" />
         </a>
         <span className="chip chip-ghost">{NETWORK}</span>
       </div>
@@ -679,7 +680,7 @@ function PaymentInfo() {
               rel="noreferrer"
               className="label text-mute hover:text-ink"
             >
-              Contract {CONTRACT_SHORT} ↗
+              Contract {CONTRACT_SHORT} <ArrowUpRight weight="bold" className="inline-block align-[-0.1em]" />
             </a>
             <button
               type="button"

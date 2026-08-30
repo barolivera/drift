@@ -12,6 +12,7 @@
   "dependencies": {
     "@p2pdotme/sdk": "^1.2.21",
     "@p2pdotme/widgets": "^1.8.1",
+    "@phosphor-icons/react": "^2.1.10",
     "@privy-io/react-auth": "^2.4.0",
     "geist": "^1.7.2",
     "react": "^18.3.1",

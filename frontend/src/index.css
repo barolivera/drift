@@ -331,6 +331,7 @@ details > summary::-webkit-details-marker {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: visible !important; /* its card clips the currency dropdown otherwise */
 }
 .p2p-host > div > div > div:first-child {
   display: none !important; /* its own title bar */
