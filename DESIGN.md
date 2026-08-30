@@ -75,6 +75,10 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
 - **Badge/patch marks**: shield-shaped frame around the line-art icons
   (`Patch` in Marks.tsx) — used on the edition page.
 - **Footer**: the wordmark (`public/images/marks/wordmark.svg`) and one label.
+- **UI icons**: Phosphor (`@phosphor-icons/react`, `bold` weight for glyphs
+  inside text, `fill` for the checkout ticket). No emoji or arrow characters in
+  the interface; the payment widget's own emoji is swapped for a Phosphor
+  ticket in `hooks/useWidgetCopy.tsx`.
 - **Checkout** (`pages/Book.tsx`): one stepper, four steps — Details ›
   Matching › Pay › Done — and a different screen per step. Details is two
   columns (form or saved details + "how you pay" left, order summary right).
