@@ -51,31 +51,26 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
 
 ## Components
 
-- **Nav**: paper background, logo left, pill buttons right (outline +
-  coral solid).
-- **Hero**: full-bleed photo (black & white), dark scrim left-to-right,
-  Geist Pixel headline in white ("Pause the routine. Build together."),
-  Manrope subtext, photo credit small in a corner.
-- **Floating cards**: paper/light-gray surface, no border, soft shadow,
-  20px radius — the base unit for every section below the hero.
+- **Nav**: contiguous surface segments — the mark + "Drift." wordmark
+  (`public/images/marks/logo.svg`), the links, and the account. Coral only
+  on the primary action inside pages; the nav itself is neutral.
+- **Hero**: full-bleed dithered photo (black & white settling into colour),
+  Geist Pixel headline in white ("Pause. Reconnect. Build Together.").
+- **Section titles**: `ui.sectionTitle` — Geist Pixel, 32–48px, tight leading.
+- **Inclusions list** (`Inclusions.tsx`, `variant="list"`): two columns, a
+  56px coral artwork per item (`public/images/marks/inc-*.svg`), text-face
+  28px title, one line of detail. No schedule/hours.
+- **Edition card** (`EditionCard.tsx`): a soft `surface-3` card with the
+  dithered edition photo inset in a square (`public/images/editions/*.png`),
+  a dashed rule, the dates, the place in Geist Pixel and "See Edition →".
+  No price, no seat count — the edition page carries them.
+- **"Who it's for" cards**: `forest-deep` cards, one big paper glyph each
+  (`public/images/marks/who-*.svg`), 20px semibold title, one line.
+- **FAQ band** (`FaqSection.tsx`, items in `lib/faq.tsx`): full-width surface
+  band, section title, stacked paper question cards.
 - **Badge/patch marks**: shield-shaped frame around the line-art icons
-  (`Patch` in Marks.tsx) — a "program patch," not freestanding icons.
-- **Boarding pass edition card** (`EditionCard.tsx`) — a ticket shape:
-  - Segment 1 — photo, full width, clean, no overlay tags.
-  - Perforation divider between segments (torn-ticket line).
-  - Segment 2 — stub, solid color per edition (forest/coral):
-    - Metadata row: icon + date range, icon + seats — Manrope label
-      style, paper-on-color.
-    - Edition name — Geist Pixel, large, paper.
-    - Bottom-right: "SEE THE EDITION" (underlined, Manrope label style)
-      + arrow icon. Links to that edition's page. No price shown.
-- **Inclusions grid** (`Inclusions.tsx`): patch icon + uppercase label +
-  one-line description, 2 columns, no schedule/hours.
-- **FAQ accordion** (`Faq.tsx`, items in `lib/faq.tsx`): houses the payment
-  mechanics explanation (moved out of its own Home section).
-- **"Pick your water" section**: title only, no eyebrow/date, no
-  subtitle paragraph — the boarding pass cards carry all the info.
-
+  (`Patch` in Marks.tsx) — used on the edition page.
+- **Footer**: the wordmark (`public/images/marks/wordmark.svg`) and one label.
 - **Checkout** (`pages/Book.tsx`): one stepper, four steps — Details ›
   Matching › Pay › Done — and a different screen per step. Details is two
   columns (form or saved details + "how you pay" left, order summary right).

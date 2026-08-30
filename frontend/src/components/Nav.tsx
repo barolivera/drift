@@ -1,20 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
-import { api, type Trip } from '@/lib/api';
 
 /**
- * Segmented nav: contiguous rounded segments on the surface fill — wordmark,
- * links, and the controls. Coral appears exactly once: "Book a seat", which
- * is a dropdown straight into each edition's booking flow (Trips is for
- * browsing). Account collapses into an avatar dropdown.
+ * Segmented nav: contiguous rounded segments on the surface fill — the mark
+ * and wordmark, the links, and the controls. Booking starts from an edition
+ * page; the nav only offers Trips and the account.
  */
 export function Nav() {
   const { ready, authenticated, login, logout, user } = usePrivy();
-  const [trips, setTrips] = useState<Trip[]>([]);
-  useEffect(() => {
-    api<Trip[]>('/api/trips').then(setTrips).catch(() => setTrips([]));
-  }, []);
 
   const email = user?.email?.address ?? user?.google?.email ?? null;
   const label = email ?? (user?.wallet?.address ? `${user.wallet.address.slice(0, 6)}…${user.wallet.address.slice(-4)}` : 'Account');
@@ -29,8 +23,9 @@ export function Nav() {
   return (
     <div className="flex items-stretch">
       {/* segment 1 — wordmark */}
-      <Link to="/" className={`${segment} px-5 font-display text-xl font-extrabold tracking-tight md:px-8`}>
-        drift<span className="text-coral">.</span>
+      <Link to="/" className={`${segment} gap-1.5 px-5 md:px-8`} aria-label="Drift — home">
+        <img src="/images/marks/logo.svg" alt="" width={37} height={20} className="h-5 w-[37px]" />
+        <span className="text-2xl font-extrabold leading-none text-ink">Drift.</span>
       </Link>
 
       {/* segment 2 — links, right-aligned (hidden on mobile) */}
@@ -42,27 +37,6 @@ export function Nav() {
 
       {/* segment 3 — the actions */}
       <div className={`${segment} flex-1 justify-end gap-2 px-2.5 md:flex-none md:px-3`}>
-        <Dropdown
-          align="right"
-          trigger={(open) => (
-            <button className="btn-primary whitespace-nowrap px-4 py-2.5 md:px-5" aria-haspopup="menu" aria-expanded={open}>
-              Book a seat <Chevron open={open} />
-            </button>
-          )}
-        >
-          <p className="label px-3 pb-1 pt-2 text-mute">Pick your edition</p>
-          {trips.length === 0 && <p className="px-3 py-2 text-sm text-mute">Loading…</p>}
-          {trips.map((t) => {
-            const soldOut = t.seats_left <= 0;
-            return (
-              <MenuLink key={t.id} to={soldOut ? `/trips/${t.id}` : `/trips/${t.id}/book`}>
-                <span className="whitespace-nowrap font-semibold">{t.title.split(' — ')[0]}</span>
-                <span className={`label whitespace-nowrap ${soldOut ? 'text-mute' : 'text-forest'}`}>{soldOut ? 'Sold out' : `${t.seats_left} of ${t.capacity} seats`}</span>
-              </MenuLink>
-            );
-          })}
-        </Dropdown>
-
         {!ready && <span className="label px-3 text-mute">…</span>}
         {ready && !authenticated && (
           <button onClick={login} className="btn whitespace-nowrap border border-ink/25 px-4 py-2.5 text-ink hover:border-ink hover:bg-ink/5 md:px-5">
@@ -99,14 +73,6 @@ export function Nav() {
         )}
       </div>
     </div>
-  );
-}
-
-function Chevron({ open }: { open: boolean }) {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`}>
-      <path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }
 

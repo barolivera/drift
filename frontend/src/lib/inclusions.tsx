@@ -7,16 +7,20 @@ export interface Inclusion {
   label: string;
   detail: string;
   Icon: Mark;
+  /** Exported artwork for the Home list (public/images/marks); the line icon is the fallback. */
+  art?: { src: string; w: number; h: number };
 }
+
+const art = (name: string, w = 56, h = 56) => ({ src: `/images/marks/inc-${name}.svg`, w, h });
 
 /** What every edition includes — the six that matter, shown on the Home. No hours, no order. */
 export const HOME_INCLUSIONS: Inclusion[] = [
-  { label: 'Surf', detail: 'Coached sessions split by level, boards and wetsuits included.', Icon: WaveMark },
-  { label: 'Deep work', detail: 'Three protected hours a day. No meetings, no calls in shared space.', Icon: LaptopMark },
-  { label: 'Yoga', detail: 'Morning yoga and mobility, every day.', Icon: YogaMark },
-  { label: 'Meals', detail: 'Breakfast every day and dinner at one long table, everyone.', Icon: BowlMark },
-  { label: 'The house', detail: 'Fourteen nights a few minutes from the sand, room of your choice.', Icon: HouseMark },
-  { label: 'And more', detail: 'Airport transfers, a demo night, an off-grid day, workshops and a hack day.', Icon: PalmMark },
+  { label: 'Surf', detail: 'Coached sessions split by level, boards and wetsuits included.', Icon: WaveMark, art: art('surf') },
+  { label: 'Deep work', detail: 'Three protected hours a day. No meetings, no calls in shared space.', Icon: LaptopMark, art: art('deepwork') },
+  { label: 'Yoga', detail: 'Morning yoga and mobility, every day.', Icon: YogaMark, art: art('yoga', 49.83, 19.29) },
+  { label: 'Meals', detail: 'Breakfast every day and dinner at one long table, everyone.', Icon: BowlMark, art: art('meals') },
+  { label: 'The house', detail: 'Just a few minutes from the sand, room of your choice.', Icon: HouseMark, art: art('house') },
+  { label: 'And more', detail: 'Airport transfers, a demo night, an off-grid day, workshops and a hack day.', Icon: PalmMark, art: art('more') },
 ];
 
 /* Keyword → label + icon, used to render a trip's `included` strings from the DB. */

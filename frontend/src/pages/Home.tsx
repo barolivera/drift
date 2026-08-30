@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import { api, type Trip } from '@/lib/api';
-import { photos, src, srcSet } from '@/lib/photos';
-import { BlocksMark, LaptopMark, PalmMark, Patch, WaveMark } from '@/components/Marks';
 import { Inclusions } from '@/components/Inclusions';
 import { HOME_INCLUSIONS } from '@/lib/inclusions';
 import { EditionCard } from '@/components/EditionCard';
@@ -11,7 +9,7 @@ import { ui } from '@/lib/ui';
 import { ScrollReveal } from '@/components/ScrollReveal';
 
 
-const { hero: container, content, section, h2 } = ui;
+const { hero: container, content, sectionTitle: h2 } = ui;
 
 export function Home() {
   const [trips, setTrips] = useState<Trip[] | null>(null);
@@ -30,7 +28,6 @@ export function Home() {
       <Editions trips={trips} />
       <WhoItsFor />
       <FaqSection />
-      <FooterCta />
     </div>
   );
 }
@@ -101,9 +98,9 @@ function WhatItIs() {
 /* ───────────── 3. LIFE AT THE HOUSE — inclusions grid, no hours ───────────── */
 function LifeAtTheHouse() {
   return (
-    <section className={`${content} pb-32 md:pb-44`}>
-      <h2 className={`${h2} max-w-[12ch] uppercase`}>Life at the house</h2>
-      <Inclusions items={HOME_INCLUSIONS} variant="plain" className="mt-14 md:mt-20" />
+    <section className={`${content} pb-32 pt-12 md:pb-44`}>
+      <h2 className={h2}>Life at the house</h2>
+      <Inclusions items={HOME_INCLUSIONS} variant="list" className="mt-20" />
     </section>
   );
 }
@@ -111,13 +108,13 @@ function LifeAtTheHouse() {
 /* ───────────── 4. THE EDITIONS — card grid, colour band per edition ───────────── */
 function Editions({ trips }: { trips: Trip[] | null }) {
   return (
-    <section id="editions" className={`${content} scroll-mt-24 py-20 md:py-24`}>
-      <h2 className={`${h2} mb-8`}>Pick your water</h2>
+    <section id="editions" className={`${content} scroll-mt-24 py-24`}>
+      <h2 className={`${h2} mb-6`}>Pick your water</h2>
 
       {trips === null && <p className="text-mute">Loading…</p>}
       {trips && trips.length === 0 && <p className="text-mute">No editions announced yet.</p>}
       {trips && trips.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+        <div className="grid gap-5 md:grid-cols-2">
           {trips.map((trip) => (
             <EditionCard key={trip.id} trip={trip} />
           ))}
@@ -127,71 +124,42 @@ function Editions({ trips }: { trips: Trip[] | null }) {
   );
 }
 
-/* ───────────── 5. WHO IT'S FOR — three tall surface cards, big line icon, title + one line ───────────── */
+/* ───────────── 5. WHO IT'S FOR — three deep-forest cards, a big paper glyph, title + one line ───────────── */
+const PROFILES = [
+  {
+    title: 'Remote workers',
+    body: 'You already have the job. You want a fortnight where the job and the ocean fit in the same day.',
+    art: { src: '/images/marks/who-remote.svg', w: 171, h: 209 },
+  },
+  {
+    title: 'Founders and builders',
+    body: 'You have a thing you keep not shipping. Two weeks and a demo night is a deadline.',
+    art: { src: '/images/marks/who-founders.svg', w: 181, h: 160 },
+  },
+  {
+    title: 'People who have never surfed',
+    body: 'Sessions are split by level and the first three days exist for exactly this.',
+    art: { src: '/images/marks/who-surf.svg', w: 267, h: 257 },
+  },
+];
+
 function WhoItsFor() {
-  const profiles = [
-    {
-      title: 'Remote workers',
-      Icon: LaptopMark,
-      body: 'You already have the job. You want a fortnight where the job and the ocean fit in the same day.',
-    },
-    {
-      title: 'Founders and builders',
-      Icon: BlocksMark,
-      body: 'You have a thing you keep not shipping. Two weeks and a demo night is a deadline.',
-    },
-    {
-      title: 'People who have never surfed',
-      Icon: WaveMark,
-      body: 'Sessions are split by level and the first three days exist for exactly this.',
-    },
-  ];
   return (
-    <section id="who" className={`${content} ${section}`}>
+    <section id="who" className={`${content} py-24`}>
       <h2 className={h2}>Who it's for</h2>
-      <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
-        {profiles.map(({ title, Icon, body }) => (
-          <article key={title} className="card flex min-h-[520px] flex-col p-8 md:min-h-[600px] sm:p-10">
-            <div className="flex flex-1 items-center justify-center py-6">
-              <Icon className="h-48 w-48 text-ink md:h-56 md:w-56" title={title} />
+      <div className="mt-10 grid gap-5 md:grid-cols-3">
+        {PROFILES.map(({ title, body, art }) => (
+          <article key={title} className="flex flex-col gap-6 rounded-[20px] bg-forest-deep p-10 text-paper">
+            {/* glyph box: 257px tall, artwork at its exported size */}
+            <div className="flex h-[257px] items-center justify-center py-6">
+              <img src={art.src} alt="" width={art.w} height={art.h} style={{ width: art.w, height: art.h }} className="max-w-full" />
             </div>
-            <h3 className="text-xl font-semibold tracking-tight text-ink">{title}</h3>
-            <p className="mt-3 text-base leading-relaxed text-mute">{body}</p>
+            <div className="flex flex-col gap-3">
+              <h3 className="text-xl font-semibold leading-7 tracking-[-0.5px]">{title}</h3>
+              <p className="text-base leading-[26px]">{body}</p>
+            </div>
           </article>
         ))}
-      </div>
-    </section>
-  );
-}
-
-/* ───────────── 8. FOOTER CTA — dark band, photo, big title ───────────── */
-function FooterCta() {
-  return (
-    <section className={`${content} pb-6 pt-20 md:pt-24`}>
-      <div className="relative isolate overflow-hidden rounded-[28px] bg-ink text-paper">
-        <img
-          src={src(photos.hero, 1600)}
-          srcSet={srcSet(photos.hero)}
-          sizes="100vw"
-          alt={photos.hero.alt}
-          className="absolute inset-0 -z-10 h-full w-full object-cover object-bottom grayscale"
-        />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/85 via-ink/55 to-ink/25" />
-        <div className="flex min-h-[520px] flex-col items-start justify-between gap-10 p-8 sm:p-12 md:p-16">
-          <div className="flex w-full items-start justify-between">
-            <p className="label text-paper/70">Brazil · 2027</p>
-            <Patch Icon={PalmMark} title="Drift" className="h-20 text-paper/80" />
-          </div>
-          <div className="grid w-full gap-8 md:grid-cols-[1fr_auto] md:items-end">
-            <div>
-              <h2 className="display max-w-[14ch] text-[clamp(2.25rem,5.6vw,4.75rem)]">Sixteen seats. Two editions. Pick your water.</h2>
-              <p className="mt-4 max-w-md text-base text-paper/70">Pay in your currency; Drift settles in USDC on Base. Seat held while you pay.</p>
-            </div>
-            <a href="#editions" className="btn-primary btn-lg">
-              See the editions ↑
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );

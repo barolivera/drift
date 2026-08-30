@@ -11,12 +11,14 @@
   --color-paper: #fbfcfd;
   --color-surface: #f4f3ef;
   --color-surface-2: #ebeae4;
+  --color-surface-3: #eff0e6; /* edition cards */
   --color-line: #e4e2dc;
   --color-ink: #16181c;
   --color-mute: #6f727a;
 
   /* palette — small doses only */
   --color-forest: #224e35;
+  --color-forest-deep: #094f33; /* "Who it's for" cards */
   --color-forest-soft: #dfe9e2;
   --color-lilac: #b3abeb;
   --color-lilac-soft: #e8e5f8;

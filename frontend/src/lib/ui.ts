@@ -15,6 +15,8 @@ export const ui = {
   /** page / section titles — display face, 40–72px */
   h1: 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink',
   h2: 'display text-[clamp(2.5rem,5.2vw,4.5rem)] text-ink',
+  /** Home section titles — display face, 32–48px, tight leading */
+  sectionTitle: 'display text-[clamp(2rem,3.4vw,3rem)] leading-[1.15] text-ink',
   /** secondary titles — display face, 32–48px */
   title: 'display text-[clamp(2rem,3.6vw,3rem)] text-ink',
   /** card / item titles — text face */

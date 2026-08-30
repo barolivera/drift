@@ -26,7 +26,7 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className={`${ui.content} flex flex-col gap-2 py-8 sm:flex-row sm:items-center sm:justify-between`}>
-        <span className="label text-mute">Drift · surf residencies · Brazil 2027</span>
+        <img src="/images/marks/wordmark.svg" alt="Drift" width={58} height={10} className="h-[10px] w-[58px]" />
         <span className="label text-mute">payments settle on Base via P2P.me</span>
       </footer>
     </div>
