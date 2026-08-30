@@ -34,7 +34,7 @@ const SPOT: Record<string, { hero: Picture; gallery: Picture[]; airport: string;
     transfer: 'We pick you up at the airport on arrival day — about four hours to the house along the coast — and take you back on departure day.',
   },
   'praia-do-rosa': {
-    hero: fromPhoto(photos.praiaDoRosa, 2000),
+    hero: { src: '/images/editions/praia-do-rosa-hero.png', alt: 'Praia do Rosa from above: the bay, the beach and the lagoon behind it' },
     gallery: [
       'The long table under the pergola, looking out to the bay',
       'The deck and the stone house',
