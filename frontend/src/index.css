@@ -291,6 +291,18 @@ details > summary::-webkit-details-marker {
   .hero-copy, .hero-cue { animation: none; }
 }
 
+/* ── Edition card photo: dither dissolve ────────────────────────────────
+   Two images are stacked — the real photo underneath, its dithered version
+   on top. Hovering peels the dithered layer away through a tiled 4×4 Bayer
+   mask that opens in 16 steps (see lib/dither.ts, driven with the Web
+   Animations API so enter and leave always start a fresh stepped run). */
+.dither-layer {
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  -webkit-mask-size: 16px 16px;
+  mask-size: 16px 16px;
+}
+
 /* Scroll-reveal words: the filled copy is a ::before overlay clipped to --fill,
    so the DOM has each word once and copy/select stays clean. */
 .reveal-word {

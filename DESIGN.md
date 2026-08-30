@@ -63,9 +63,11 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
   56px coral artwork per item (`public/images/marks/inc-*.svg`), text-face
   28px title, one line of detail. No schedule/hours.
 - **Edition card** (`EditionCard.tsx`): a soft `surface-3` card with the
-  dithered edition photo inset in a square (`public/images/editions/*.png`),
-  a dashed rule, the dates, the place in Geist Pixel and "See Edition →".
-  No price, no seat count — the edition page carries them.
+  dithered edition photo inset in a square (`public/images/editions/*.png`)
+  over the real photo (`*-photo.jpg`); hovering de-dithers it — the dithered
+  layer dissolves through a 16-step Bayer mask (`lib/dither.ts`) and comes
+  back the same way. Then a dashed rule, the dates, the place in Geist Pixel
+  and "See Edition →". No price, no seat count — the edition page carries them.
 - **"Who it's for" cards**: `forest-deep` cards, one big paper glyph each
   (`public/images/marks/who-*.svg`), 20px semibold title, one line.
 - **FAQ band** (`FaqSection.tsx`, items in `lib/faq.tsx`): full-width surface
