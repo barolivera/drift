@@ -133,17 +133,17 @@ const PROFILES = [
   {
     title: 'Remote workers',
     body: 'You already have the job. You want a fortnight where the job and the ocean fit in the same day.',
-    art: { src: '/images/marks/who-remote.svg', w: 171, h: 209 },
+    art: { src: '/images/marks/who-remote.svg', w: 130, h: 159 },
   },
   {
     title: 'Founders and builders',
     body: 'You have a thing you keep not shipping. Two weeks and a demo night is a deadline.',
-    art: { src: '/images/marks/who-founders.svg', w: 181, h: 160 },
+    art: { src: '/images/marks/who-founders.svg', w: 174, h: 154 },
   },
   {
     title: 'People who have never surfed',
     body: 'Sessions are split by level and the first three days exist for exactly this.',
-    art: { src: '/images/marks/who-surf.svg', w: 267, h: 257 },
+    art: { src: '/images/marks/who-surf.svg', w: 267, h: 183 },
   },
 ];
 
@@ -154,8 +154,8 @@ function WhoItsFor() {
       <div className="mt-10 grid gap-5 md:grid-cols-3">
         {PROFILES.map(({ title, body, art }) => (
           <article key={title} className="flex flex-col gap-6 rounded-[20px] bg-forest-deep p-10 text-paper">
-            {/* glyph box: 257px tall, artwork at its exported size */}
-            <div className="flex h-[257px] items-center justify-center py-6">
+            {/* glyph box: 207px tall, artwork at its exported size */}
+            <div className="flex h-[207px] items-center justify-center py-6">
               <img src={art.src} alt="" width={art.w} height={art.h} style={{ width: art.w, height: art.h }} className="max-w-full" />
             </div>
             <div className="flex flex-col gap-3">
