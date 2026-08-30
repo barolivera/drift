@@ -11,9 +11,11 @@ import { spotsRouter } from './routes/spots.js';
 import { webhooksRouter } from './routes/webhooks.js';
 
 /**
- * CORS_ORIGIN is a comma-separated list. An entry like `*.vercel.app` allows
- * any origin ending in `.vercel.app` (preview deployments); everything else
- * must match exactly. Requests without an Origin (curl, health checks) pass.
+ * CORS_ORIGIN is a comma-separated list. An entry like `*-team.vercel.app`
+ * allows any origin ending in `-team.vercel.app` (preview deployments — keep
+ * the suffix team-scoped, `*.vercel.app` would admit every Vercel site);
+ * everything else must match exactly. Requests without an Origin (curl,
+ * health checks) pass.
  */
 function corsOrigin(list: string): cors.CorsOptions['origin'] {
   const entries = list.split(',').map((s) => s.trim()).filter(Boolean);

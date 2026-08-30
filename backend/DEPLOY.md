@@ -187,7 +187,9 @@ build `npm ci && npm run build -w backend`, start `npm run start -w backend`,
 health check `GET /health`. Add a Postgres service and reference it as
 `DATABASE_URL=${{Postgres.DATABASE_URL}}`. Runtime variables (see
 `backend/src/config/env.ts`): `NODE_ENV=production`, `PORT` (Railway injects it),
-`CORS_ORIGIN` (comma-separated; `*.vercel.app` allows preview deployments),
+`CORS_ORIGIN` (comma-separated: the production domain plus a suffix entry for
+previews — use the team-scoped one, e.g. `*-<team>.vercel.app`; a bare
+`*.vercel.app` would let any Vercel site call the API),
 `DATABASE_URL`, `PRIVY_APP_ID`, `PRIVY_APP_SECRET`, `P2PKIT_API_KEY`,
 `P2PKIT_API_URL`, `P2PKIT_WEBHOOK_SECRET`, `P2PKIT_CHAIN`, `P2PKIT_ASSET`,
 `DRIFT_TREASURY_ADDRESS`, `DRIFT_INTEGRATOR_ADDRESS`, `USDC_ADDRESS` (direct USDC
