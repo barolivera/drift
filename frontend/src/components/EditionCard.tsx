@@ -19,7 +19,7 @@ const fallback = (photo: Photo) => ({ dither: src(photo, 900), photo: src(photo,
  * dates, the place in Geist Pixel and "See Edition". No price, no seat count
  * here — the edition page carries them. The whole card is a link.
  */
-export function EditionCard({ trip }: { trip: Trip }) {
+export function EditionCard({ trip, className = 'w-full max-w-[415px]' }: { trip: Trip; className?: string }) {
   const art = ART[trip.spot.slug] ?? fallback(photos.hero);
   const [place] = trip.title.split(' — ');
   const dither = useRef<HTMLImageElement>(null);
@@ -27,7 +27,7 @@ export function EditionCard({ trip }: { trip: Trip }) {
   return (
     <Link
       to={`/trips/${trip.id}`}
-      className="group block transition hover:-translate-y-0.5"
+      className={`group block transition hover:-translate-y-0.5 ${className}`}
       onMouseEnter={() => reveal(true)}
       onMouseLeave={() => reveal(false)}
       onFocus={() => reveal(true)}
@@ -42,13 +42,13 @@ export function EditionCard({ trip }: { trip: Trip }) {
         </div>
         <div aria-hidden className="mx-[11%] border-t border-dashed border-[#bfbfba]" />
         <div className="flex flex-col gap-7 py-5 pl-6 pr-[18px]">
-          <p className="flex items-center gap-2.5 text-[18px] font-semibold uppercase tracking-[0.8px] text-ink">
+          <p className="flex items-center gap-2.5 text-[15px] font-semibold uppercase tracking-[0.8px] text-ink">
             <img src="/images/marks/calendar.svg" alt="" width={20} height={20} className="h-5 w-5" />
             {formatDateRange(trip.starts_on, trip.ends_on)}
           </p>
           <div>
-            <h3 className="display text-[3rem] leading-10 tracking-[-0.5px] text-ink">{place}</h3>
-            <span className="display mt-3 inline-block text-[18px] leading-10 tracking-[-0.5px] text-ink underline decoration-1 underline-offset-4 group-hover:decoration-2">
+            <h3 className="display text-[2rem] leading-10 tracking-[-0.5px] text-ink">{place}</h3>
+            <span className="display inline-block text-base leading-10 tracking-[-0.5px] text-ink underline decoration-1 underline-offset-4 group-hover:decoration-2">
               See Edition →
             </span>
           </div>

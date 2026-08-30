@@ -61,7 +61,7 @@ function Hero() {
 
         <div className="flex h-full flex-col items-center justify-center px-6 py-24 text-center sm:px-12">
           {/* .hero-copy fades in once the frame has settled (see index.css) */}
-          <h1 className="hero-copy display text-[clamp(2.5rem,7.8vw,7rem)] text-paper">
+          <h1 className="hero-copy display text-[clamp(2.25rem,4.4vw,4rem)] leading-[1.1] text-paper">
             Pause. Reconnect.
             <br />
             Build Together.
@@ -110,17 +110,20 @@ function LifeAtTheHouse() {
 function Editions({ trips }: { trips: Trip[] | null }) {
   return (
     <section id="editions" className={`${content} scroll-mt-24 py-24`}>
-      <h2 className={`${h2} mb-6`}>Pick your water</h2>
+      {/* the block hugs its cards and sits centred; the title lines up with the first card */}
+      <div className="mx-auto w-fit max-w-full">
+        <h2 className={`${h2} mb-6`}>Pick your water</h2>
 
-      {trips === null && <p className="text-mute">Loading…</p>}
-      {trips && trips.length === 0 && <p className="text-mute">No editions announced yet.</p>}
-      {trips && trips.length > 0 && (
-        <div className="grid gap-5 md:grid-cols-2">
-          {trips.map((trip) => (
-            <EditionCard key={trip.id} trip={trip} />
-          ))}
-        </div>
-      )}
+        {trips === null && <p className="text-mute">Loading…</p>}
+        {trips && trips.length === 0 && <p className="text-mute">No editions announced yet.</p>}
+        {trips && trips.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-[31px]">
+            {trips.map((trip) => (
+              <EditionCard key={trip.id} trip={trip} className="w-[415px] max-w-full shrink-0" />
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
