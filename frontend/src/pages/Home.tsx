@@ -7,7 +7,6 @@ import { EditionCard } from '@/components/EditionCard';
 import { FaqSection } from '@/components/FaqSection';
 import { ui } from '@/lib/ui';
 import { ScrollReveal } from '@/components/ScrollReveal';
-import { TypedHeadline } from '@/components/TypedHeadline';
 
 
 const { hero: container, content, sectionTitle: h2 } = ui;
@@ -38,11 +37,7 @@ export function Home() {
 const HERO_BW = '/images/hero-bw.png';
 const HERO_COLOR = '/images/hero-color.png';
 
-/** The frame settles in 1.1s (see .hero-frame); the headline types after that, then the scroll cue appears. */
-const HERO_LINES = ['Pause. Reconnect.', 'Build Together.'];
-
 function Hero() {
-  const [typed, setTyped] = useState(false);
   return (
     <section className={`${container} pt-[var(--gutter)]`}>
       {/* .hero-frame mounts full-viewport and settles into this rounded box (see index.css) */}
@@ -65,19 +60,17 @@ function Hero() {
         <div aria-hidden className="absolute inset-x-0 bottom-0 -z-10 h-48 bg-gradient-to-t from-ink/50 to-transparent" />
 
         <div className="flex h-full flex-col items-center justify-center px-6 py-24 text-center sm:px-12">
-          <TypedHeadline
-            lines={HERO_LINES}
-            startDelay={1150}
-            className="display text-[clamp(2.5rem,7.8vw,7rem)] text-paper"
-            onDone={() => setTyped(true)}
-          />
+          {/* .hero-copy fades in once the frame has settled (see index.css) */}
+          <h1 className="hero-copy display text-[clamp(2.5rem,7.8vw,7rem)] text-paper">
+            Pause. Reconnect.
+            <br />
+            Build Together.
+          </h1>
         </div>
         <a
           href="#what"
           aria-label="Scroll to what it is"
-          className={`absolute bottom-6 left-1/2 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-paper text-ink shadow-soft transition duration-500 hover:bg-surface ${
-            typed ? 'opacity-100' : 'pointer-events-none opacity-0'
-          }`}
+          className="hero-cue absolute bottom-6 left-1/2 flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full bg-paper text-ink shadow-soft transition hover:bg-surface"
         >
           <span aria-hidden>↓</span>
         </a>

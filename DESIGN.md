@@ -56,9 +56,8 @@ tints of forest/lilac/mustard/coral and `coral-600` #D2521F for hover.
   on the primary action inside pages; the nav itself is neutral.
 - **Hero**: full-bleed dithered photo (black & white settling into colour),
   Geist Pixel headline in white ("Pause. Reconnect. Build Together.").
-  Sequence: the frame settles (1.1s) → the headline types itself with a
-  block caret (`TypedHeadline`, ~40ms per character) → the scroll cue fades
-  in. Reduced motion shows everything at once.
+  Sequence: the frame settles (1.1s) → the headline fades in → the scroll
+  cue follows a beat later. Reduced motion shows everything at once.
 - **Section titles**: `ui.sectionTitle` — Geist Pixel, 32–48px, tight leading.
 - **Inclusions list** (`Inclusions.tsx`, `variant="list"`): two columns, a
   56px coral artwork per item (`public/images/marks/inc-*.svg`), text-face
