@@ -21,7 +21,6 @@ const SPOT: Record<string, { hero: Picture; gallery: Picture[]; airport: string;
   itamambuca: {
     hero: { src: '/images/hero-color.png', alt: 'A river mouth meeting the beach at Itamambuca, Ubatuba' },
     gallery: [
-      'The house from above: pool, deck and palms',
       'The house and the pool from the garden',
       'Sun loungers on the pool deck',
       'The living room',
