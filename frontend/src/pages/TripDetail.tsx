@@ -35,7 +35,16 @@ const SPOT: Record<string, { hero: Picture; gallery: Picture[]; airport: string;
   },
   'praia-do-rosa': {
     hero: fromPhoto(photos.praiaDoRosa, 2000),
-    gallery: [fromPhoto(photos.builders, 1400), fromPhoto(photos.praiaDoRosa, 1400)],
+    gallery: [
+      'The long table under the pergola, looking out to the bay',
+      'The deck and the stone house',
+      'The path to the front door',
+      'The veranda over the garden',
+      'The dining room under the timber roof',
+      'Kitchen and dining room',
+      'A double room',
+      'The view over Praia do Rosa',
+    ].map((alt, i) => ({ src: `/images/editions/praia-do-rosa-house-${i + 1}.jpg`, alt })),
     airport: 'Fly into Florianópolis (FLN).',
     transfer: 'We pick you up at the airport on arrival day — about ninety minutes south to the bay — and take you back on departure day.',
   },
