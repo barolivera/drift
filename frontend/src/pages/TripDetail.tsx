@@ -21,9 +21,16 @@ const SPOT: Record<string, { hero: Picture; gallery: Picture[]; airport: string;
   itamambuca: {
     hero: { src: '/images/hero-color.png', alt: 'A river mouth meeting the beach at Itamambuca, Ubatuba' },
     gallery: [
-      { src: '/images/editions/itamambuca-house.jpg', alt: 'The house at Itamambuca: pool, deck and palms' },
-      fromPhoto(photos.itamambuca, 1400),
-    ],
+      'The house from above: pool, deck and palms',
+      'The house and the pool from the garden',
+      'Sun loungers on the pool deck',
+      'The living room',
+      'Living room and the long dining table',
+      'The kitchen',
+      'The outdoor kitchen and barbecue',
+      'A double room opening onto the balcony',
+      'A twin room',
+    ].map((alt, i) => ({ src: `/images/editions/itamambuca-house-${i + 1}.jpg`, alt })),
     airport: 'Fly into São Paulo (GRU).',
     transfer: 'We pick you up at the airport on arrival day — about four hours to the house along the coast — and take you back on departure day.',
   },
@@ -98,7 +105,7 @@ export function TripDetail() {
       {/* b. THE HOUSE — copy left, gallery right */}
       <section className={`${wide} py-24`}>
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:justify-center">
-          <div className="w-full max-w-[627px] lg:shrink-0">
+          <div className="w-full max-w-[627px] lg:min-w-0 lg:flex-1">
             <h2 className={h2}>The house</h2>
             <div className="mt-6 space-y-5 text-lg leading-[1.5] text-ink/80 sm:text-xl">
               {paragraphs.map((para, i) => (
@@ -162,14 +169,16 @@ function Gallery({ pictures }: { pictures: Picture[] }) {
   const count = pictures.length;
   const go = (delta: number) => setIndex((i) => (i + delta + count) % count);
   const current = pictures[index];
-  const arrow = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper text-ink shadow-soft transition hover:bg-surface disabled:opacity-40';
+  const arrow =
+    'display flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper text-2xl leading-none text-ink shadow-soft transition hover:bg-surface disabled:opacity-40';
   return (
-    <div className="flex w-full max-w-[1040px] items-center justify-center gap-3">
+    <div className="flex w-full items-center justify-center gap-3 lg:w-auto lg:shrink-0">
       <button type="button" onClick={() => go(-1)} disabled={count < 2} aria-label="Previous photo" className={arrow}>
         <span aria-hidden>←</span>
       </button>
-      <div className="w-full max-w-[928px] rounded-[20px] bg-surface p-2 shadow-soft">
-        <img key={current.src} src={current.src} alt={current.alt} className="aspect-[912/1049] w-full rounded-[16px] object-cover" />
+      {/* 769×889 frame in the design; shrinks with the viewport below 1920 */}
+      <div className="w-full max-w-[769px] rounded-[20px] bg-surface p-2 shadow-soft lg:w-[min(769px,46vw)]">
+        <img key={current.src} src={current.src} alt={current.alt} className="aspect-[755/871] w-full rounded-[16px] object-cover" />
       </div>
       <button type="button" onClick={() => go(1)} disabled={count < 2} aria-label="Next photo" className={arrow}>
         <span aria-hidden>→</span>
