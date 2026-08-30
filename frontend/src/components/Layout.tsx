@@ -10,7 +10,8 @@ import { ui } from '@/lib/ui';
  */
 export function Layout() {
   const { pathname } = useLocation();
-  const home = pathname === '/';
+  // Pages whose hero carries the nav: the Home and the edition pages.
+  const home = pathname === '/' || /^\/trips\/[^/]+$/.test(pathname);
   return (
     <div className="relative flex min-h-full flex-col bg-paper">
       <header

@@ -99,3 +99,7 @@ type scale, `--spacing-section`, `--radius-*`, shadows) plus the `@utility`
 rules right below it (`label`, `display`, `btn-*`, `chip-*`, `card`,
 `field`). Any token change lands there first; this doc gets updated to
 match, never the other way around.
+
+## Edition page (`TripDetail`)
+
+One template for every edition, fed by the trip record: boxed hero photo with the nav on it and a paper title card in the corner (date, place in the display face, lede, "Book now" + "Dates & logistics"); "The house" (long description next to a one-at-a-time photo gallery in a `surface` frame); "Life at the house" (the same `Inclusions` list as the Home, artwork by label); "Dates and prices" (three `surface` cards: dates, getting there, reserve your seat); FAQ. Per-spot pictures and the airport/transfer note live in the `SPOT` map until they move to the DB.

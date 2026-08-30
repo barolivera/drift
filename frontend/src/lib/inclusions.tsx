@@ -37,9 +37,23 @@ const RULES: { re: RegExp; label: string; Icon: Mark }[] = [
   { re: /night|room|house/i, label: 'The house', Icon: HouseMark },
 ];
 
+/** Artwork for the list variant, by label (falls back to the line icon). */
+const ART_BY_LABEL: Record<string, Inclusion['art']> = {
+  Surf: art('surf'),
+  Boards: art('surf'),
+  'Deep work': art('deepwork'),
+  Yoga: art('yoga', 49.83, 19.29),
+  Meals: art('meals'),
+  'The house': art('house'),
+  'Demo night': art('more'),
+  Transfers: art('more'),
+  'Off-grid day': art('more'),
+};
+
 export function inclusionsFrom(included: string[]): Inclusion[] {
   return included.map((detail) => {
     const rule = RULES.find((r) => r.re.test(detail));
-    return { label: rule?.label ?? 'Included', detail, Icon: rule?.Icon ?? SunMark };
+    const label = rule?.label ?? 'Included';
+    return { label, detail, Icon: rule?.Icon ?? SunMark, art: ART_BY_LABEL[label] };
   });
 }
