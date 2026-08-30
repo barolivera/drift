@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Ticket } from '@phosphor-icons/react';
+import { CaretRight, Ticket } from '@phosphor-icons/react';
 
 /**
  * Trims the payment widget's copy to what a guest needs to pay.
@@ -9,7 +9,7 @@ import { Ticket } from '@phosphor-icons/react';
  * them in the DOM after each render. Text is changed on the text nodes
  * themselves so the widget's own updates (countdown, "Confirming…") keep
  * working:
- *   · the order summary's emoji becomes a Phosphor ticket
+ *   · the order summary's emoji and the breakdown glyph become Phosphor icons
  *   · the "Order #…" line in the payment box goes (debug data; it still
  *     appears in the widget's own expired-order help, which we leave alone)
  *   · the bilingual "scan to copy — not a payable QR" caption becomes one
@@ -27,6 +27,7 @@ const CAPTION_BY_LANG: [RegExp, string][] = [
 
 const TICKET_EMOJI = /^\u{1F39F}️?$/u;
 const TICKET_SVG = renderToStaticMarkup(<Ticket weight="fill" size={24} aria-hidden />);
+const CARET_SVG = renderToStaticMarkup(<CaretRight weight="bold" size={12} aria-hidden />);
 
 /** Direct text-node rewrite: keeps React's node so its later updates still land. */
 function rewrite(el: HTMLElement, re: RegExp, text: string) {
@@ -52,6 +53,10 @@ export function useWidgetCopy(host: HTMLElement | null) {
         const text = el.textContent?.trim() ?? '';
         if (el.childElementCount === 0 && text.startsWith('Order #')) hide(el);
         if (/^Pay via .+ and confirm$/.test(text)) hide(el);
+        if (el.childElementCount === 0 && text === '\u25B8') {
+          el.innerHTML = CARET_SVG; // "View breakdown" disclosure glyph
+          el.style.display = 'inline-flex';
+        }
       });
       host.querySelectorAll<HTMLElement>('p').forEach((el) => {
         const text = el.textContent?.trim() ?? '';
