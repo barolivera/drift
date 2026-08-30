@@ -165,7 +165,7 @@ function InfoCard({ title, value, note, children }: { title: string; value: stri
     <article className="flex flex-col gap-3 rounded-[20px] bg-surface p-10">
       <h3 className="text-xl font-semibold leading-7 tracking-[-0.5px] text-ink">{title}</h3>
       <p className="text-2xl font-extrabold leading-8 tracking-[-0.6px] text-ink">{value}</p>
-      {note && <p className="text-sm leading-[1.6] text-ink">{note}</p>}
+      {note && <p className="text-base leading-[1.5] text-ink">{note}</p>}
       {children && <div className="pt-1">{children}</div>}
     </article>
   );
