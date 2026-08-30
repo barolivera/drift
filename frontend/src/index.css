@@ -275,6 +275,19 @@ details > summary::-webkit-details-marker {
   .hero-color { animation: none; }
 }
 
+/* Hero headline caret — blinks while the headline is being typed. */
+.hero-caret {
+  display: inline-block;
+  margin-left: 0.04em;
+  animation: hero-caret-blink 0.9s steps(1, end) infinite;
+}
+@keyframes hero-caret-blink {
+  50% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-caret { display: none; }
+}
+
 /* Scroll-reveal words: the filled copy is a ::before overlay clipped to --fill,
    so the DOM has each word once and copy/select stays clean. */
 .reveal-word {
