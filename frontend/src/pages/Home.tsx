@@ -61,7 +61,7 @@ function Hero() {
 
         <div className="flex h-full flex-col items-center justify-center px-6 py-24 text-center sm:px-12">
           {/* .hero-copy fades in once the frame has settled (see index.css) */}
-          <h1 className="hero-copy display text-[clamp(2.25rem,4.4vw,4rem)] leading-[1.1] text-paper">
+          <h1 className="hero-copy display text-[clamp(2.5rem,6.7vw,6rem)] leading-[1.1] text-paper">
             Pause. Reconnect.
             <br />
             Build Together.
