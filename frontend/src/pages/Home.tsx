@@ -156,7 +156,7 @@ function WhoItsFor() {
             </div>
             <div className="flex flex-col gap-3">
               <h3 className="text-xl font-semibold leading-7 tracking-[-0.5px]">{title}</h3>
-              <p className="text-base leading-[26px]">{body}</p>
+              <p className="text-[18px] leading-[26px]">{body}</p>
             </div>
           </article>
         ))}

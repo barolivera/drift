@@ -32,7 +32,7 @@ export function Inclusions({
             </span>
             <div className="min-w-0">
               <h3 className="text-[1.75rem] font-normal leading-7 text-ink">{label}</h3>
-              <p className="mt-2 text-base leading-[22px] text-ink/80">{detail}</p>
+              <p className="mt-2 text-[18px] leading-[22px] text-ink/80">{detail}</p>
             </div>
           </li>
         ))}
