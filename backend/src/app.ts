@@ -19,8 +19,8 @@ import { webhooksRouter } from './routes/webhooks.js';
  */
 function corsOrigin(list: string): cors.CorsOptions['origin'] {
   const entries = list.split(',').map((s) => s.trim()).filter(Boolean);
-  const exact = new Set(entries.filter((e) => !e.startsWith('*.')));
-  const suffixes = entries.filter((e) => e.startsWith('*.')).map((e) => e.slice(1)); // ".vercel.app"
+  const exact = new Set(entries.filter((e) => !e.startsWith('*')));
+  const suffixes = entries.filter((e) => e.startsWith('*')).map((e) => e.slice(1)); // "-team.vercel.app"
   return (origin, cb) => {
     if (!origin) return cb(null, true);
     let host = '';
