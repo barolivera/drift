@@ -46,9 +46,9 @@ export function EditionCard({ trip, className = 'w-full max-w-[415px]' }: { trip
             <img src="/images/marks/calendar.svg" alt="" width={20} height={20} className="h-5 w-5" />
             {formatDateRange(trip.starts_on, trip.ends_on)}
           </p>
-          <div>
+          <div className="flex flex-col items-start gap-3">
             <h3 className="display text-[2rem] leading-10 tracking-[-0.5px] text-ink">{place}</h3>
-            <span className="display inline-block text-base leading-10 tracking-[-0.5px] text-ink underline decoration-1 underline-offset-4 group-hover:decoration-2">
+            <span className="display inline-flex h-10 w-[127px] items-center justify-center rounded-3xl bg-lilac text-base leading-10 tracking-[-0.5px] text-ink underline decoration-1 underline-offset-2 transition-colors group-hover:bg-lilac/80">
               See Edition →
             </span>
           </div>

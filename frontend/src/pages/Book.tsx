@@ -154,8 +154,8 @@ export function Book() {
     <div className="flex min-h-full flex-col bg-paper text-ink">
       {/* header — full width, above everything */}
       <header className="flex items-center justify-between px-6 py-5 md:px-10 xl:px-12">
-        <Link to="/" className="text-xl font-extrabold tracking-tight">
-          drift<span className="text-coral">.</span>
+        <Link to="/" aria-label="Drift home">
+          <img src="/images/marks/logo-full.svg" alt="Drift" width={105} height={34} className="h-[34px] w-auto" />
         </Link>
         <span className="label text-mute">Secure booking</span>
       </header>
