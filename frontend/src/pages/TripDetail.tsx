@@ -181,7 +181,6 @@ function Gallery({ pictures }: { pictures: Picture[] }) {
   const [index, setIndex] = useState(0);
   const count = pictures.length;
   const go = (delta: number) => setIndex((i) => (i + delta + count) % count);
-  const current = pictures[index];
   const arrow =
     'display flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper text-2xl leading-none text-ink shadow-soft transition hover:bg-surface disabled:opacity-40';
   return (
@@ -189,9 +188,21 @@ function Gallery({ pictures }: { pictures: Picture[] }) {
       <button type="button" onClick={() => go(-1)} disabled={count < 2} aria-label="Previous photo" className={arrow}>
         <span aria-hidden>←</span>
       </button>
-      {/* 769×889 frame in the design; shrinks with the viewport below 1920 */}
+      {/* 769×889 frame in the design; shrinks with the viewport below 1920.
+          All pictures stay mounted, stacked; the current one crossfades in. */}
       <div className="w-full max-w-[769px] rounded-[20px] bg-surface p-2 shadow-soft lg:w-[min(769px,46vw)]">
-        <img key={current.src} src={current.src} alt={current.alt} className="aspect-[755/871] w-full rounded-[16px] object-cover" />
+        <div className="relative aspect-[755/871] w-full overflow-hidden rounded-[16px]">
+          {pictures.map((pic, i) => (
+            <img
+              key={pic.src}
+              src={pic.src}
+              alt={pic.alt}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              aria-hidden={i !== index}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out motion-reduce:transition-none ${i === index ? 'opacity-100' : 'opacity-0'}`}
+            />
+          ))}
+        </div>
       </div>
       <button type="button" onClick={() => go(1)} disabled={count < 2} aria-label="Next photo" className={arrow}>
         <span aria-hidden>→</span>

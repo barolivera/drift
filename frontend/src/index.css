@@ -379,3 +379,33 @@ details > summary::-webkit-details-marker {
     transition: none;
   }
 }
+
+/* ── FAQ accordion: the answer panel eases open/closed ──────────────────
+   Grid-rows 0fr→1fr animates the height without measuring it; the inner
+   wrapper clips, the answer itself fades and settles. */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.faq-panel.is-open {
+  grid-template-rows: 1fr;
+}
+.faq-panel > div {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.faq-panel.is-open > div {
+  opacity: 1;
+  transform: none;
+  transition-delay: 60ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-panel,
+  .faq-panel > div {
+    transition: none;
+  }
+}
