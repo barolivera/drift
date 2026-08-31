@@ -158,8 +158,10 @@ And `frontend/.env`:
 npm run dev                      # api → http://localhost:4000, web → http://localhost:5173
 ```
 
-Open a trip, **Book Now**, pay. In demo mode you can simulate P2P's webhook from another terminal
-and watch the booking confirm in real time:
+Open a trip, **Book Now**, pay. Demo mode is a **local-only** switch (`VITE_P2P_DEMO=true`) that
+fakes the widget's on-chain lifecycle for UX work — production runs the real flow. With the API
+in dev you can also simulate P2P's webhook from another terminal and watch the booking confirm
+in real time:
 
 ```bash
 # orderId = the id logged by the frontend ("[checkout] order placed demo…")
@@ -214,7 +216,7 @@ drift/
 |---|---|
 | `users` | one row per Privy identity (`privy_did`), `wallet_address`, `is_host` |
 | `spots` | surf spot: `slug`, `city`, `state`, `capacity`, `daily_rate_usdc`, `level` |
-| `trips` | an edition at a spot. Booking fields: `starts_on`, `ends_on`, `capacity` (= total seats), `price_usdc`, `level`, `is_published`. Editorial fields: `slug`, `location`, `description`, `description_long`, `included` / `not_included` (jsonb string[]), `who_its_for`, `daily_schedule` (jsonb, kept in the DB; the edition page no longer renders a day-by-day timeline) |
+| `trips` | an edition at a spot. Booking fields: `starts_on`, `ends_on`, `capacity` (= total seats), `price_usdc` (current/founding price), `price_full_usdc` (regular price once the `founding_seats` are gone), `level`, `is_published`. Editorial fields: `slug`, `location`, `description`, `description_long`, `included` / `not_included` (jsonb string[]), `who_its_for`, `daily_schedule` (jsonb, kept in the DB; the edition page no longer renders a day-by-day timeline) |
 | `bookings` | `(trip_id, user_id)` unique, `seats`, `status` pending → confirmed / cancelled / completed. Registration form (saved before checkout, no effect on status): `full_name`, `email`, `telegram` (no `@`), `country`, `surf_level` (`never`/`beginner`/`intermediate`/`advanced`), `working_on`, `dietary`, `agreed_terms_at` |
 | `payments` | one per attempt: `method` (`pix_p2pkit` / `usdc`), `status`, `amount_usdc`, `tx_hash`, `p2pkit_order_id` (Diamond orderId), `p2pkit_payload` |
 | `trip_availability` (view) | `seats_taken` / `seats_left` per trip from pending + confirmed bookings |
@@ -224,8 +226,8 @@ editing copy and re-running `npm run db:seed` updates the rows in place:
 
 | Edition | Dates | Seats | Price |
 |---|---|---|---|
-| Itamambuca — Summer Edition (`itamambuca-summer-2027`) | 16 – 30 Jan 2027 | 16 | from 1,200 USDC |
-| Praia do Rosa — Autumn Edition (`praia-do-rosa-autumn-2027`) | 24 Apr – 8 May 2027 | 16 | from 1,300 USDC |
+| Itamambuca — Summer Edition (`itamambuca-summer-2027`) | 16 – 30 Jan 2027 | 16 | **900 USDC** founding (first 8 seats) · 1,200 after |
+| Praia do Rosa — Autumn Edition (`praia-do-rosa-autumn-2027`) | 24 Apr – 8 May 2027 | 16 | **950 USDC** founding (first 8 seats) · 1,300 after |
 
 ## API
 
