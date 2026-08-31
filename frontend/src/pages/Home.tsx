@@ -7,6 +7,7 @@ import { EditionCard } from '@/components/EditionCard';
 import { FaqSection } from '@/components/FaqSection';
 import { ui } from '@/lib/ui';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { Reveal } from '@/components/Reveal';
 
 
 const { hero: container, content, sectionTitle: h2 } = ui;
@@ -100,8 +101,10 @@ function WhatItIs() {
 function LifeAtTheHouse() {
   return (
     <section className={`${content} pb-32 pt-12 md:pb-44`}>
-      <h2 className={h2}>Life at the house</h2>
-      <Inclusions items={HOME_INCLUSIONS} variant="list" className="mt-20" />
+      <Reveal as="h2" className={h2}>Life at the house</Reveal>
+      <Reveal delay={90}>
+        <Inclusions items={HOME_INCLUSIONS} variant="list" className="mt-20" />
+      </Reveal>
     </section>
   );
 }
@@ -112,16 +115,16 @@ function Editions({ trips }: { trips: Trip[] | null }) {
     <section id="editions" className={`${content} scroll-mt-24 py-24`}>
       {/* the block hugs its cards and sits centred; the title lines up with the first card */}
       <div className="mx-auto w-fit max-w-full">
-        <h2 className={`${h2} mb-6`}>Pick your water</h2>
+        <Reveal as="h2" className={`${h2} mb-6`}>Pick your water</Reveal>
 
         {trips === null && <p className="text-mute">Loading…</p>}
         {trips && trips.length === 0 && <p className="text-mute">No editions announced yet.</p>}
         {trips && trips.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-[31px]">
+          <Reveal group className="flex flex-wrap justify-center gap-[31px]">
             {trips.map((trip) => (
               <EditionCard key={trip.id} trip={trip} className="w-[415px] max-w-full shrink-0" />
             ))}
-          </div>
+          </Reveal>
         )}
       </div>
     </section>
@@ -150,8 +153,8 @@ const PROFILES = [
 function WhoItsFor() {
   return (
     <section id="who" className={`${content} py-24`}>
-      <h2 className={h2}>Who it's for</h2>
-      <div className="mt-10 grid gap-5 md:grid-cols-3">
+      <Reveal as="h2" className={h2}>Who it's for</Reveal>
+      <Reveal group className="mt-10 grid gap-5 md:grid-cols-3">
         {PROFILES.map(({ title, body, art }) => (
           <article key={title} className="flex flex-col gap-6 rounded-[20px] bg-forest-deep p-10 text-paper">
             {/* glyph box: 207px tall, artwork at its exported size */}
@@ -164,7 +167,7 @@ function WhoItsFor() {
             </div>
           </article>
         ))}
-      </div>
+      </Reveal>
     </section>
   );
 }

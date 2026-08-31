@@ -348,3 +348,34 @@ details > summary::-webkit-details-marker {
   width: min(280px, 70vw) !important;
   height: auto !important;
 }
+
+/* ── Scroll reveal: sections rise softly as they enter the viewport ─────
+   <Reveal> adds .rise (or .rise-group to stagger direct children) and the
+   IntersectionObserver adds .is-in once. */
+.rise,
+.rise-group > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition-delay: var(--rise-delay, 0s);
+}
+.rise.is-in,
+.rise-group.is-in > * {
+  opacity: 1;
+  transform: none;
+}
+.rise-group.is-in > :nth-child(2) { transition-delay: calc(var(--rise-delay, 0s) + 90ms); }
+.rise-group.is-in > :nth-child(3) { transition-delay: calc(var(--rise-delay, 0s) + 180ms); }
+.rise-group.is-in > :nth-child(4) { transition-delay: calc(var(--rise-delay, 0s) + 270ms); }
+.rise-group.is-in > :nth-child(5) { transition-delay: calc(var(--rise-delay, 0s) + 360ms); }
+.rise-group.is-in > :nth-child(n + 6) { transition-delay: calc(var(--rise-delay, 0s) + 450ms); }
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .rise-group > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

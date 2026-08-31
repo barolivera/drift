@@ -4,6 +4,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { api, formatDateRange, formatUsdc, hasFoundingPrice, type Trip } from '@/lib/api';
 import { Inclusions } from '@/components/Inclusions';
 import { FaqSection } from '@/components/FaqSection';
+import { Reveal } from '@/components/Reveal';
 import { ui } from '@/lib/ui';
 import { inclusionsFrom } from '@/lib/inclusions';
 import { photos, src, type Photo } from '@/lib/photos';
@@ -113,28 +114,32 @@ export function TripDetail() {
       {/* b. THE HOUSE — copy left, gallery right */}
       <section className={`${wide} py-24`}>
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:justify-center">
-          <div className="w-full max-w-[627px] lg:min-w-0 lg:flex-1">
+          <Reveal className="w-full max-w-[627px] lg:min-w-0 lg:flex-1">
             <h2 className={h2}>The house</h2>
             <div className="mt-6 space-y-5 text-lg leading-[1.5] text-ink/80 sm:text-xl">
               {paragraphs.map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
             </div>
-          </div>
-          <Gallery pictures={spot.gallery} />
+          </Reveal>
+          <Reveal delay={120} className="flex w-full justify-center lg:w-auto lg:shrink-0">
+            <Gallery pictures={spot.gallery} />
+          </Reveal>
         </div>
       </section>
 
       {/* c. LIFE AT THE HOUSE — same list as the Home */}
       <section className={`${content} pb-32 pt-12 md:pb-44`}>
-        <h2 className={h2}>Life at the house</h2>
-        <Inclusions items={inclusions} variant="list" className="mt-20" />
+        <Reveal as="h2" className={h2}>Life at the house</Reveal>
+        <Reveal delay={90}>
+          <Inclusions items={inclusions} variant="list" className="mt-20" />
+        </Reveal>
       </section>
 
       {/* d. DATES AND PRICES */}
       <section id="logistics" className={`${content} scroll-mt-24 py-24`}>
-        <h2 className={h2}>Dates and prices</h2>
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <Reveal as="h2" className={h2}>Dates and prices</Reveal>
+        <Reveal group className="mt-10 grid gap-5 md:grid-cols-3">
           <InfoCard title="Dates" value={formatDateRange(trip.starts_on, trip.ends_on)} />
           <InfoCard title="Getting there" value={spot.airport || 'By air'} note={spot.transfer} />
           <InfoCard
@@ -150,7 +155,7 @@ export function TripDetail() {
           >
             {bookButton}
           </InfoCard>
-        </div>
+        </Reveal>
       </section>
 
       {/* e. FAQ — shared band; "How does paying work?" lives here */}
