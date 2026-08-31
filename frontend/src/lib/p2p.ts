@@ -34,10 +34,11 @@ export const P2P = {
  * subgraph (VITE_P2P_SUBGRAPH_URL); VITE_P2P_BRL_CIRCLE_ID pins BRL to a
  * specific circle if set.
  *
- * Only BRL is offered: a trip costs ~900 USDC and the testnet's ARS/INR/IDR
- * merchants can't absorb that ticket in fiat (order 705 sat unaccepted in
- * matching forever), while BRL handled the exact amount. Re-add currencies
- * once their merchant channels can cover a seat.
+ * BRL and ARS are offered. Heads-up: a trip costs ~900 USDC and the testnet's
+ * merchant channels often can't absorb that ticket in fiat (orders 705/706 sat
+ * unaccepted in matching), so for a payment that must complete use BRL when its
+ * big merchant has daily headroom — or direct USDC. INR/IDR stay off until
+ * their channels can cover a seat.
  */
 export const CURRENCIES: CurrencyOption[] = [
   {
@@ -46,6 +47,7 @@ export const CURRENCIES: CurrencyOption[] = [
     paymentMethod: 'PIX',
     ...(P2P.brlCircleId !== undefined ? { circleId: P2P.brlCircleId } : {}),
   },
+  { symbol: 'ARS', flag: '🇦🇷', paymentMethod: 'Alias' },
 ];
 
 /** Can the widget route an order? Either a subgraph or a pinned circle is needed. */
